@@ -1,0 +1,313 @@
+@import "tailwindcss";
+
+/* ─────────────────────────────────────────────
+   Tailwind v4 CSS-first theme
+   All design tokens extracted from tailwind.config.ts
+   ───────────────────────────────────────────── */
+@theme {
+  /* ── Colours ── */
+  --color-ink:           #1C1421;
+  --color-ink-soft:      #3A2E42;
+
+  --color-paper:         #F6F3EC;
+  --color-paper-raised:  #FFFFFF;
+
+  --color-grape-50:      #F4EDFB;
+  --color-grape-100:     #E4D2F5;
+  --color-grape-200:     #C9A6EA;
+  --color-grape-300:     #A876D8;
+  --color-grape-400:     #8A50BF;
+  --color-grape-500:     #6E2FA3;
+  --color-grape-600:     #5A2286;
+  --color-grape-700:     #481B6C;
+  --color-grape-800:     #3A1657;
+  --color-grape-900:     #2C1042;
+  --color-grape-950:     #1E0B2E;
+
+  --color-marigold-50:   #FFF7E5;
+  --color-marigold-100:  #FFEBB8;
+  --color-marigold-200:  #FFDB80;
+  --color-marigold-300:  #FFC647;
+  --color-marigold-400:  #FFB020;
+  --color-marigold-500:  #F79B00;
+  --color-marigold-600:  #D98200;
+  --color-marigold-700:  #B06700;
+  --color-marigold-800:  #874F00;
+  --color-marigold-900:  #5E3700;
+
+  --color-punch-50:      #FFEEF1;
+  --color-punch-100:     #FFD3DB;
+  --color-punch-200:     #FFA6B6;
+  --color-punch-300:     #FF7891;
+  --color-punch-400:     #FF5470;
+  --color-punch-500:     #F22B52;
+  --color-punch-600:     #D01A3F;
+  --color-punch-700:     #A31432;
+  --color-punch-800:     #7A0F26;
+  --color-punch-900:     #530A1A;
+
+  --color-leaf-50:       #E9F7EF;
+  --color-leaf-100:      #C8ECD6;
+  --color-leaf-400:      #3CB273;
+  --color-leaf-500:      #1E8E5A;
+  --color-leaf-600:      #166F46;
+
+  /* ── Typography ── */
+  --font-sans:     var(--font-manrope), -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-display:  var(--font-playfair), Georgia, Cambria, "Times New Roman", serif;
+  --font-mono:     var(--font-manrope), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* ── Border radius ── */
+  --radius-xl2: 1.25rem;
+
+  /* ── Shadows ── */
+  --shadow-card: 0 1px 2px rgba(28, 20, 33, 0.06), 0 8px 24px -12px rgba(28, 20, 33, 0.18);
+  --shadow-pop:  0 10px 30px -10px rgba(94, 29, 110, 0.35);
+
+  /* ── Keyframe animations ── */
+  --animate-pop-in: pop-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-float:  float 4s ease-in-out infinite;
+  --animate-marquee: marquee 22s linear infinite;
+}
+
+/* ── Keyframes ── */
+@keyframes pop-in {
+  0%   { transform: scale(0.92); opacity: 0; }
+  100% { transform: scale(1);    opacity: 1; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
+}
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ─────────────────────────────────────────────
+   Base styles
+   ───────────────────────────────────────────── */
+* {
+  border-color: color-mix(in srgb, var(--color-ink) 10%, transparent);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background-color: var(--color-marigold-300);
+  color: var(--color-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-grape-500);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ─────────────────────────────────────────────
+   Custom component classes (preserved from v3)
+   ───────────────────────────────────────────── */
+
+.container-app {
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 1440px;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+@media (min-width: 40rem) {
+  .container-app {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+@media (min-width: 64rem) {
+  .container-app {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+/* Ticket-style price tag — the signature motif: a torn-ticket price badge
+   used across product cards, PDP, and cart to echo an event ticket. */
+.ticket-tag {
+  position: relative;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  font-family: var(--font-mono);
+}
+.ticket-tag::before,
+.ticket-tag::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  background: var(--color-paper);
+  border-radius: 999px;
+  transform: translateY(-50%);
+}
+
+.confetti-bg {
+  background-image: radial-gradient(currentColor 1.2px, transparent 1.2px);
+  background-size: 16px 16px;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  background-color: var(--color-grape-600);
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #fff;
+  box-shadow: var(--shadow-pop);
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+.btn-primary:hover {
+  background-color: var(--color-grape-700);
+}
+.btn-primary:active {
+  transform: scale(0.98);
+}
+.btn-primary:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--color-ink) 20%, transparent);
+  background-color: #fff;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+.btn-secondary:hover {
+  border-color: color-mix(in srgb, var(--color-ink) 30%, transparent);
+  background-color: var(--color-paper);
+}
+.btn-secondary:active {
+  transform: scale(0.98);
+}
+
+.btn-accent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  background-color: var(--color-marigold-400);
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  box-shadow: var(--shadow-pop);
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+.btn-accent:hover {
+  background-color: var(--color-marigold-500);
+}
+.btn-accent:active {
+  transform: scale(0.98);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--color-ink) 10%, transparent);
+  background-color: #fff;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: color-mix(in srgb, var(--color-ink) 80%, transparent);
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+.chip:hover {
+  border-color: var(--color-grape-400);
+  color: var(--color-grape-700);
+}
+
+.chip-active {
+  border-color: var(--color-grape-600);
+  background-color: var(--color-grape-600);
+  color: #fff;
+}
+.chip-active:hover {
+  background-color: var(--color-grape-700);
+  color: #fff;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 0.375rem;
+  padding: 0.125rem 0.5rem;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.input-field {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--color-ink) 20%, transparent);
+  background-color: #fff;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  color: var(--color-ink);
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+.input-field::placeholder {
+  color: color-mix(in srgb, var(--color-ink) 40%, transparent);
+}
+.input-field:focus {
+  border-color: var(--color-grape-500);
+}
+
+.text-balance {
+  text-wrap: balance;
+}

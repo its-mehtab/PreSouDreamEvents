@@ -1,0 +1,755 @@
+import { Product, CityAvailability, Review, AddOn, CustomizationOption } from "@/lib/types";
+import { cities } from "@/lib/data/categories";
+
+let uid = 1000;
+const nextId = () => (uid++).toString();
+
+const REVIEW_POOL: Omit<Review, "id" | "city">[] = [
+  { author: "Priya S.", rating: 5, date: "2026-06-12", comment: "The setup looked even better than the pictures. Team arrived on time and cleaned up after." },
+  { author: "Rohit M.", rating: 4, date: "2026-05-28", comment: "Good quality balloons, colours matched the theme we picked. Would book again." },
+  { author: "Anjali K.", rating: 5, date: "2026-07-02", comment: "Booked this for my daughter's birthday, she loved it. Decorators were polite and quick." },
+  { author: "Devraj P.", rating: 5, date: "2026-04-19", comment: "Exceeded expectations for the price. The LED name looked premium in photos." },
+  { author: "Sneha T.", rating: 4, date: "2026-06-30", comment: "Slight delay in arrival but the final setup was worth the wait." },
+  { author: "Karan V.", rating: 5, date: "2026-07-10", comment: "Used this for an anniversary surprise, my wife was speechless. Highly recommend." },
+  { author: "Meera J.", rating: 3, date: "2026-05-05", comment: "Decor was nice but a couple of balloons had deflated by evening." },
+  { author: "Arjun D.", rating: 5, date: "2026-07-15", comment: "Very professional team, customization options were flexible and easy to select." },
+];
+
+function makeReviews(n: number, cityPool: string[]): Review[] {
+  const out: Review[] = [];
+  for (let i = 0; i < n; i++) {
+    const r = REVIEW_POOL[i % REVIEW_POOL.length];
+    out.push({ ...r, id: nextId(), city: cityPool[i % cityPool.length] });
+  }
+  return out;
+}
+
+function makeAvailability(pool: string[]): CityAvailability[] {
+  return cities.map((c, i) => {
+    if (!pool.includes(c)) {
+      return { city: c, status: "unavailable" as const };
+    }
+    const roll = (i + pool.indexOf(c)) % 5;
+    if (roll === 0) return { city: c, status: "limited" as const, earliestSlot: "Tomorrow, 6:00 PM" };
+    return { city: c, status: "available" as const, earliestSlot: "Today, 4:00 PM" };
+  });
+}
+
+const commonAddOns: Record<string, AddOn> = {
+  ledName: { id: "addon-led-name", name: "LED Name Light", price: 349 },
+  cakeTable: { id: "addon-cake-table", name: "Decorated Cake Table", price: 499 },
+  photoPrints: { id: "addon-photo-prints", name: "Photo Prints Garland", price: 299 },
+  candles: { id: "addon-candles", name: "Candle Path (30 pcs)", price: 249 },
+  welcomeBoard: { id: "addon-welcome-board", name: "Welcome Board", price: 399 },
+  fogEntry: { id: "addon-fog", name: "Fog Entry Effect", price: 899 },
+  photographer: { id: "addon-photographer", name: "1-Hour Photographer", price: 1499 },
+  rosePetals: { id: "addon-rose-petals", name: "Rose Petal Trail", price: 349 },
+  extraBalloons: { id: "addon-extra-balloons", name: "50 Extra Balloons", price: 299 },
+  smokeBomb: { id: "addon-smoke-bomb", name: "Colour Smoke (2 pcs)", price: 449 },
+};
+
+const standardCustomizations: CustomizationOption[] = [
+  { id: "cust-colors", label: "Balloon Colour Palette", type: "color", choices: ["Rose Gold", "Pastel Mix", "Red & White", "Black & Gold", "Blue & Silver"] },
+  { id: "cust-name", label: "Name on Backdrop", type: "text" },
+  { id: "cust-age", label: "Age / Number Foil", type: "text" },
+  { id: "cust-message", label: "Custom Message", type: "text" },
+];
+
+function baseFaqs(): { q: string; a: string }[] {
+  return [
+    { q: "How long does setup take?", a: "Most setups are completed within 60–90 minutes before your requested time slot." },
+    { q: "Can I reschedule my booking?", a: "Yes, you can reschedule up to 24 hours before the event from your booking tracking page." },
+    { q: "Do you provide setup at venues outside home?", a: "Yes, we set up at homes, hotels, halls, terraces, offices and outdoor venues." },
+    { q: "What if it's raining for an outdoor setup?", a: "Our team will contact you to shift to an indoor alternative or reschedule at no extra cost." },
+  ];
+}
+
+interface BuildArgs {
+  name: string;
+  tagline: string;
+  category: Product["category"];
+  secondaryCategories?: Product["category"][];
+  decorationType: Product["decorationType"];
+  theme: string[];
+  style: string[];
+  images: string[];
+  price: number;
+  mrp: number;
+  badges?: string[];
+  isCustomizable?: boolean;
+  isPremium?: boolean;
+  isTrending?: boolean;
+  isBestSeller?: boolean;
+  isNewArrival?: boolean;
+  cityPool?: string[];
+  whatsIncluded: string[];
+  addOns?: AddOn[];
+  customizations?: CustomizationOption[];
+  numberOfBalloons?: number;
+  setupDurationMins?: number;
+  ratingSeed?: number;
+}
+
+function slugify(s: string) {
+  return s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+function build(a: BuildArgs): Product {
+  const cityPool = a.cityPool ?? ["Kolkata", "Mumbai", "Delhi NCR", "Bengaluru", "Hyderabad", "Pune"];
+  const reviewCount = 24 + ((a.ratingSeed ?? 1) * 17) % 260;
+  const rating = Math.round((3.9 + (((a.ratingSeed ?? 1) * 37) % 11) / 10) * 10) / 10;
+  return {
+    id: nextId(),
+    slug: slugify(a.name) + "-" + nextId(),
+    name: a.name,
+    tagline: a.tagline,
+    category: a.category,
+    secondaryCategories: a.secondaryCategories ?? [],
+    decorationType: a.decorationType,
+    theme: a.theme,
+    style: a.style,
+    images: a.images,
+    price: a.price,
+    mrp: a.mrp,
+    rating: Math.min(rating, 5),
+    reviewCount,
+    reviews: makeReviews(4, cityPool),
+    badges: a.badges ?? [],
+    isCustomizable: a.isCustomizable ?? true,
+    isPremium: a.isPremium ?? false,
+    isTrending: a.isTrending ?? false,
+    isBestSeller: a.isBestSeller ?? false,
+    isNewArrival: a.isNewArrival ?? false,
+    cities: makeAvailability(cityPool),
+    whatsIncluded: a.whatsIncluded,
+    addOns: a.addOns ?? [commonAddOns.ledName, commonAddOns.cakeTable, commonAddOns.photoPrints, commonAddOns.candles],
+    customizations: a.customizations ?? standardCustomizations,
+    setupInfo: "Our decorators arrive 60–90 minutes prior to your slot with all material and complete setup on site.",
+    cancellationInfo: "Free cancellation up to 48 hours before the event. Rescheduling is free up to 24 hours before.",
+    faqs: baseFaqs(),
+    numberOfBalloons: a.numberOfBalloons,
+    setupDurationMins: a.setupDurationMins ?? 75,
+  };
+}
+
+const IMG = {
+  balloonArchPink: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?q=80&w=1000&auto=format&fit=crop",
+  balloonArchColor: "https://images.unsplash.com/photo-1464349153735-7db50ed83c84?q=80&w=1000&auto=format&fit=crop",
+  balloonRoom: "https://images.unsplash.com/photo-1583911860205-72f8ac8ddcbe?q=80&w=1000&auto=format&fit=crop",
+  balloonCeiling: "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?q=80&w=1000&auto=format&fit=crop",
+  romanticRoom: "https://images.unsplash.com/photo-1518895949257-7621c3c786d7?q=80&w=1000&auto=format&fit=crop",
+  candlelightDinner: "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?q=80&w=1000&auto=format&fit=crop",
+  babyShower: "https://images.unsplash.com/photo-1544216428-d0122336a4c8?q=80&w=1000&auto=format&fit=crop",
+  kidsTheme: "https://images.unsplash.com/photo-1560184611-ff3e53f00e8f?q=80&w=1000&auto=format&fit=crop",
+  weddingStage: "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1000&auto=format&fit=crop",
+  flowerDecor: "https://images.unsplash.com/photo-1487070183336-b863922373d4?q=80&w=1000&auto=format&fit=crop",
+  corporateEvent: "https://images.unsplash.com/photo-1511578314322-379afb476865?q=80&w=1000&auto=format&fit=crop",
+  premiumSetup: "https://images.unsplash.com/photo-1478146059778-26028b07395a?q=80&w=1000&auto=format&fit=crop",
+  terrace: "https://images.unsplash.com/photo-1533105079780-92b9be482077?q=80&w=1000&auto=format&fit=crop",
+  goldBalloons: "https://images.unsplash.com/photo-1541447271487-09612b3f49f7?q=80&w=1000&auto=format&fit=crop",
+  balloonGarland: "https://images.unsplash.com/photo-1575917649705-5b59aaa12e2b?q=80&w=1000&auto=format&fit=crop",
+  candyTheme: "https://images.unsplash.com/photo-1558636508-e0db3814bd1d?q=80&w=1000&auto=format&fit=crop",
+  jungleTheme: "https://images.unsplash.com/photo-1516214104703-d870798883c5?q=80&w=1000&auto=format&fit=crop",
+  proposalSetup: "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?q=80&w=1000&auto=format&fit=crop",
+  haldiDecor: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=1000&auto=format&fit=crop",
+  officeParty: "https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=1000&auto=format&fit=crop",
+};
+
+export const products: Product[] = [
+  build({
+    name: "Rose Gold Balloon Arch Birthday Setup",
+    tagline: "Elegant rose gold arch with foil balloons & backdrop",
+    category: "Birthday",
+    decorationType: "Balloon",
+    theme: ["Rose Gold", "Minimal"],
+    style: ["Balloon Arch", "Backdrop"],
+    images: [IMG.balloonArchPink, IMG.goldBalloons, IMG.balloonCeiling],
+    price: 1499,
+    mrp: 2199,
+    badges: ["Bestseller", "Trending"],
+    isTrending: true,
+    isBestSeller: true,
+    numberOfBalloons: 120,
+    ratingSeed: 3,
+    whatsIncluded: ["12ft balloon arch", "Rose gold & nude foil balloons", "Happy Birthday backdrop banner", "Setup & takedown"],
+  }),
+  build({
+    name: "Classic Red & White Birthday Arch",
+    tagline: "Timeless red-and-white balloon arch for any birthday",
+    category: "Birthday",
+    decorationType: "Balloon",
+    theme: ["Red & White", "Minimal"],
+    style: ["Balloon Arch"],
+    images: [IMG.balloonArchColor, IMG.balloonGarland, IMG.balloonRoom],
+    price: 899,
+    mrp: 1299,
+    badges: ["Under ₹999"],
+    isTrending: true,
+    numberOfBalloons: 100,
+    ratingSeed: 7,
+    whatsIncluded: ["10ft balloon arch", "Red & white latex balloons", "Age foil balloon", "Setup & takedown"],
+  }),
+  build({
+    name: "Pastel Balloon Ceiling Decoration",
+    tagline: "Dreamy pastel balloons floating across the ceiling",
+    category: "Birthday",
+    secondaryCategories: ["Baby Shower"],
+    decorationType: "Balloon",
+    theme: ["Pastel"],
+    style: ["Ceiling Decor"],
+    images: [IMG.balloonCeiling, IMG.balloonRoom, IMG.balloonArchPink],
+    price: 1799,
+    mrp: 2499,
+    isBestSeller: true,
+    numberOfBalloons: 150,
+    ratingSeed: 5,
+    whatsIncluded: ["150 ceiling balloons", "Pastel colour mix", "Ribbon curtain", "Setup & takedown"],
+  }),
+  build({
+    name: "Superhero Theme Birthday Room",
+    tagline: "Full room transformation for your little superhero",
+    category: "Kids Themes",
+    secondaryCategories: ["Birthday"],
+    decorationType: "Room Decoration",
+    theme: ["Superhero"],
+    style: ["Balloon Arch", "Backdrop"],
+    images: [IMG.kidsTheme, IMG.balloonArchColor, IMG.balloonGarland],
+    price: 2199,
+    mrp: 2999,
+    badges: ["Kids Favourite"],
+    isTrending: true,
+    numberOfBalloons: 140,
+    ratingSeed: 9,
+    whatsIncluded: ["Superhero backdrop", "Themed balloon arch", "Cutout standees", "Setup & takedown"],
+  }),
+  build({
+    name: "Princess Castle Balloon Setup",
+    tagline: "A magical princess castle backdrop with balloon clusters",
+    category: "Kids Themes",
+    secondaryCategories: ["Birthday"],
+    decorationType: "Room Decoration",
+    theme: ["Princess", "Pastel"],
+    style: ["Backdrop", "Balloon Arch"],
+    images: [IMG.kidsTheme, IMG.balloonArchPink, IMG.balloonCeiling],
+    price: 2399,
+    mrp: 3299,
+    isPremium: false,
+    numberOfBalloons: 160,
+    ratingSeed: 12,
+    whatsIncluded: ["Castle-print backdrop", "Pink & gold balloon arch", "Tiara photo prop", "Setup & takedown"],
+  }),
+  build({
+    name: "Jungle Safari Kids Party Decor",
+    tagline: "Wild jungle theme with animal cutouts & green balloons",
+    category: "Kids Themes",
+    decorationType: "Room Decoration",
+    theme: ["Jungle Safari"],
+    style: ["Backdrop", "Balloon Arch"],
+    images: [IMG.jungleTheme, IMG.balloonArchColor, IMG.kidsTheme],
+    price: 1999,
+    mrp: 2699,
+    isTrending: true,
+    numberOfBalloons: 130,
+    ratingSeed: 4,
+    whatsIncluded: ["Jungle backdrop", "Green & brown balloon arch", "Animal cutouts", "Setup & takedown"],
+  }),
+  build({
+    name: "Unicorn Dream Birthday Setup",
+    tagline: "Rainbow unicorn theme with sparkles & pastel balloons",
+    category: "Kids Themes",
+    decorationType: "Room Decoration",
+    theme: ["Unicorn", "Pastel"],
+    style: ["Backdrop", "Balloon Arch"],
+    images: [IMG.balloonArchPink, IMG.kidsTheme, IMG.balloonGarland],
+    price: 2099,
+    mrp: 2899,
+    numberOfBalloons: 145,
+    ratingSeed: 15,
+    whatsIncluded: ["Unicorn backdrop", "Pastel rainbow balloon arch", "Star confetti", "Setup & takedown"],
+  }),
+  build({
+    name: "Candy Pop Birthday Decoration",
+    tagline: "Bright candy-colour balloons with lollipop props",
+    category: "Kids Themes",
+    decorationType: "Room Decoration",
+    theme: ["Candy Pop"],
+    style: ["Balloon Arch", "Backdrop"],
+    images: [IMG.candyTheme, IMG.balloonArchColor, IMG.balloonGarland],
+    price: 1699,
+    mrp: 2399,
+    badges: ["Under ₹1,999"],
+    numberOfBalloons: 120,
+    ratingSeed: 8,
+    whatsIncluded: ["Candy-colour balloon arch", "Lollipop props", "Backdrop", "Setup & takedown"],
+  }),
+  build({
+    name: "Romantic Rose Petal Room Decoration",
+    tagline: "Rose petals, candles & fairy lights for a special night",
+    category: "Romantic",
+    decorationType: "Room Decoration",
+    theme: ["Floral", "Royal"],
+    style: ["Table Setup"],
+    images: [IMG.romanticRoom, IMG.candlelightDinner, IMG.proposalSetup],
+    price: 1899,
+    mrp: 2599,
+    badges: ["Trending"],
+    isTrending: true,
+    ratingSeed: 6,
+    whatsIncluded: ["Rose petal bed decoration", "40 LED candles", "Fairy light canopy", "Setup & takedown"],
+    addOns: [commonAddOns.rosePetals, commonAddOns.photographer, commonAddOns.smokeBomb, commonAddOns.fogEntry],
+  }),
+  build({
+    name: "Candlelight Dinner Terrace Setup",
+    tagline: "Private candlelight dinner table set up on your terrace",
+    category: "Romantic",
+    decorationType: "Candlelight Dinner",
+    theme: ["Royal", "Minimal"],
+    style: ["Terrace Setup", "Table Setup"],
+    images: [IMG.candlelightDinner, IMG.terrace, IMG.romanticRoom],
+    price: 2999,
+    mrp: 3999,
+    badges: ["Premium"],
+    isPremium: true,
+    ratingSeed: 10,
+    whatsIncluded: ["2-seater decorated table", "Candles & fairy lights", "Rose petal trail", "Music speaker"],
+    addOns: [commonAddOns.photographer, commonAddOns.rosePetals, commonAddOns.fogEntry],
+  }),
+  build({
+    name: "Proposal Balloon & Fairy Light Setup",
+    tagline: "Say yes to a dreamy proposal setup with LED lights",
+    category: "Romantic",
+    decorationType: "Room Decoration",
+    theme: ["Royal", "Red & White"],
+    style: ["Backdrop", "Balloon Arch"],
+    images: [IMG.proposalSetup, IMG.romanticRoom, IMG.balloonArchPink],
+    price: 2499,
+    mrp: 3299,
+    isPremium: true,
+    ratingSeed: 14,
+    whatsIncluded: ["Heart-shaped balloon backdrop", "Fairy light canopy", "LED 'Marry Me' sign", "Rose petal path"],
+    addOns: [commonAddOns.rosePetals, commonAddOns.photographer, commonAddOns.fogEntry],
+  }),
+  build({
+    name: "Anniversary Balloon & Photo Wall",
+    tagline: "Celebrate your years together with a photo memory wall",
+    category: "Anniversary",
+    decorationType: "Balloon",
+    theme: ["Rose Gold", "Royal"],
+    style: ["Balloon Arch", "Backdrop"],
+    images: [IMG.balloonArchPink, IMG.goldBalloons, IMG.romanticRoom],
+    price: 1699,
+    mrp: 2299,
+    isBestSeller: true,
+    numberOfBalloons: 110,
+    ratingSeed: 11,
+    whatsIncluded: ["Gold balloon arch", "Photo garland (up to 20 photos)", "Number foil balloons", "Setup & takedown"],
+  }),
+  build({
+    name: "Golden Anniversary Terrace Setup",
+    tagline: "Terrace decor with gold balloons & string lighting",
+    category: "Anniversary",
+    decorationType: "Canopy & Terrace",
+    theme: ["Royal"],
+    style: ["Terrace Setup", "Balloon Arch"],
+    images: [IMG.terrace, IMG.goldBalloons, IMG.balloonArchColor],
+    price: 2799,
+    mrp: 3599,
+    isPremium: true,
+    numberOfBalloons: 130,
+    ratingSeed: 2,
+    whatsIncluded: ["Gold & white balloon arch", "String light canopy", "Seating decor", "Setup & takedown"],
+  }),
+  build({
+    name: "Welcome Baby Balloon Backdrop",
+    tagline: "Soft pastel welcome-home setup for your little one",
+    category: "Baby Shower",
+    secondaryCategories: ["Welcome Baby"],
+    decorationType: "Room Decoration",
+    theme: ["Pastel"],
+    style: ["Backdrop", "Balloon Arch"],
+    images: [IMG.babyShower, IMG.balloonArchPink, IMG.balloonCeiling],
+    price: 1599,
+    mrp: 2199,
+    isTrending: true,
+    numberOfBalloons: 110,
+    ratingSeed: 13,
+    whatsIncluded: ["Pastel balloon arch", "Welcome Baby backdrop", "Booties & cloud cutouts", "Setup & takedown"],
+  }),
+  build({
+    name: "Baby Shower Elegant Setup",
+    tagline: "Soft florals and balloons for a memorable baby shower",
+    category: "Baby Shower",
+    decorationType: "Room Decoration",
+    theme: ["Floral", "Pastel"],
+    style: ["Backdrop", "Balloon Arch"],
+    images: [IMG.babyShower, IMG.flowerDecor, IMG.balloonArchPink],
+    price: 1999,
+    mrp: 2699,
+    numberOfBalloons: 125,
+    ratingSeed: 16,
+    whatsIncluded: ["Floral & balloon backdrop", "Reserved seating decor", "Welcome sign", "Setup & takedown"],
+  }),
+  build({
+    name: "Boy or Girl Gender Reveal Setup",
+    tagline: "Confetti-pop balloon setup for your gender reveal moment",
+    category: "Baby Shower",
+    decorationType: "Balloon",
+    theme: ["Pastel"],
+    style: ["Balloon Arch"],
+    images: [IMG.babyShower, IMG.balloonArchColor, IMG.balloonGarland],
+    price: 1799,
+    mrp: 2499,
+    numberOfBalloons: 115,
+    ratingSeed: 18,
+    whatsIncluded: ["He or She balloon arch", "Confetti popper balloon", "Backdrop banner", "Setup & takedown"],
+  }),
+  build({
+    name: "Royal Wedding Stage Decoration",
+    tagline: "Grand floral & drapery stage setup for wedding ceremonies",
+    category: "Wedding",
+    decorationType: "Stage & Ceremony",
+    theme: ["Royal", "Floral"],
+    style: ["Stage Decor"],
+    images: [IMG.weddingStage, IMG.flowerDecor, IMG.premiumSetup],
+    price: 8999,
+    mrp: 11999,
+    badges: ["Premium"],
+    isPremium: true,
+    ratingSeed: 20,
+    whatsIncluded: ["Full stage floral backdrop", "Drapery & lighting", "Mandap-style canopy", "Setup crew of 6"],
+    addOns: [commonAddOns.photographer, commonAddOns.fogEntry],
+  }),
+  build({
+    name: "Haldi Ceremony Marigold Decoration",
+    tagline: "Traditional marigold & yellow drapery haldi setup",
+    category: "Haldi & Mehndi",
+    secondaryCategories: ["Wedding"],
+    decorationType: "Room Decoration",
+    theme: ["Floral"],
+    style: ["Stage Decor", "Backdrop"],
+    images: [IMG.haldiDecor, IMG.flowerDecor, IMG.weddingStage],
+    price: 3499,
+    mrp: 4499,
+    isTrending: true,
+    ratingSeed: 21,
+    whatsIncluded: ["Marigold backdrop", "Yellow drapery", "Floor seating decor", "Setup & takedown"],
+  }),
+  build({
+    name: "Bachelorette Balloon & Sash Party",
+    tagline: "Fun balloon setup with sashes & photo props",
+    category: "Bachelorette",
+    decorationType: "Balloon",
+    theme: ["Rose Gold", "Candy Pop"],
+    style: ["Balloon Arch", "Backdrop"],
+    images: [IMG.balloonArchPink, IMG.balloonGarland, IMG.romanticRoom],
+    price: 1899,
+    mrp: 2599,
+    numberOfBalloons: 120,
+    ratingSeed: 24,
+    whatsIncluded: ["Bride tribe balloon arch", "Sash & props", "Backdrop banner", "Setup & takedown"],
+  }),
+  build({
+    name: "Engagement Balloon Backdrop",
+    tagline: "Ring-themed balloon decor for the big engagement moment",
+    category: "Wedding",
+    decorationType: "Balloon",
+    theme: ["Royal", "Rose Gold"],
+    style: ["Balloon Arch", "Backdrop"],
+    images: [IMG.balloonArchPink, IMG.weddingStage, IMG.goldBalloons],
+    price: 3299,
+    mrp: 4299,
+    isPremium: true,
+    numberOfBalloons: 150,
+    ratingSeed: 25,
+    whatsIncluded: ["Ring & heart balloon backdrop", "Gold drapery", "Stage seating decor", "Setup crew of 4"],
+  }),
+  build({
+    name: "Corporate Product Launch Decor",
+    tagline: "Sleek branded stage & balloon setup for launches",
+    category: "Corporate",
+    decorationType: "Stage & Ceremony",
+    theme: ["Minimal", "Black & Gold"],
+    style: ["Stage Decor", "Backdrop"],
+    images: [IMG.corporateEvent, IMG.officeParty, IMG.weddingStage],
+    price: 5999,
+    mrp: 7499,
+    isPremium: true,
+    ratingSeed: 27,
+    whatsIncluded: ["Branded backdrop", "Stage lighting", "Standee placement", "Setup crew of 5"],
+  }),
+  build({
+    name: "Office Birthday Cubicle Decoration",
+    tagline: "Quick, tidy desk & cubicle balloon decoration for the office",
+    category: "Corporate",
+    decorationType: "Balloon",
+    theme: ["Minimal"],
+    style: ["Balloon Arch"],
+    images: [IMG.officeParty, IMG.balloonArchColor, IMG.balloonGarland],
+    price: 999,
+    mrp: 1399,
+    badges: ["Under ₹999"],
+    numberOfBalloons: 60,
+    ratingSeed: 28,
+    whatsIncluded: ["Cubicle balloon decoration", "Desk banner", "Balloon bunch", "Setup within 45 mins"],
+  }),
+  build({
+    name: "Festival Home Balloon Decoration",
+    tagline: "Colourful balloon decor to light up festive celebrations",
+    category: "Festival",
+    decorationType: "Balloon",
+    theme: ["Red & White", "Candy Pop"],
+    style: ["Balloon Arch", "Ceiling Decor"],
+    images: [IMG.balloonArchColor, IMG.balloonCeiling, IMG.balloonGarland],
+    price: 1299,
+    mrp: 1799,
+    badges: ["Under ₹1,999"],
+    numberOfBalloons: 100,
+    ratingSeed: 30,
+    whatsIncluded: ["Festive balloon arch", "Door & window balloon strings", "Setup & takedown"],
+  }),
+  build({
+    name: "Retirement Farewell Balloon Setup",
+    tagline: "A heartfelt balloon & memory-board send-off setup",
+    category: "Retirement & Farewell",
+    decorationType: "Balloon",
+    theme: ["Minimal", "Black & Gold"],
+    style: ["Balloon Arch", "Backdrop"],
+    images: [IMG.officeParty, IMG.balloonArchColor, IMG.balloonGarland],
+    price: 1599,
+    mrp: 2199,
+    numberOfBalloons: 90,
+    ratingSeed: 31,
+    whatsIncluded: ["Farewell balloon arch", "Memory board", "Backdrop banner", "Setup & takedown"],
+  }),
+  build({
+    name: "Congratulations Balloon Backdrop",
+    tagline: "Celebrate promotions, results & good news in style",
+    category: "Congratulations",
+    decorationType: "Balloon",
+    theme: ["Red & White", "Minimal"],
+    style: ["Balloon Arch"],
+    images: [IMG.balloonArchColor, IMG.balloonGarland, IMG.balloonRoom],
+    price: 1199,
+    mrp: 1699,
+    numberOfBalloons: 90,
+    ratingSeed: 33,
+    whatsIncluded: ["Congratulations balloon arch", "Foil letter balloons", "Setup & takedown"],
+  }),
+  build({
+    name: "Premium Balloon & Flower Fusion Setup",
+    tagline: "A designer-grade mix of fresh flowers & balloon clusters",
+    category: "Birthday",
+    secondaryCategories: ["Anniversary"],
+    decorationType: "Combo",
+    theme: ["Floral", "Royal"],
+    style: ["Backdrop", "Balloon Arch"],
+    images: [IMG.premiumSetup, IMG.flowerDecor, IMG.balloonArchPink],
+    price: 3999,
+    mrp: 5299,
+    badges: ["Premium", "Trending"],
+    isPremium: true,
+    isTrending: true,
+    numberOfBalloons: 160,
+    ratingSeed: 34,
+    whatsIncluded: ["Flower & balloon backdrop", "Premium drapery", "Table centrepiece", "Setup crew of 4"],
+  }),
+  build({
+    name: "Balloon Bouquet – Doorstep Delivery",
+    tagline: "A ready-made balloon bouquet delivered to your door",
+    category: "Birthday",
+    decorationType: "Balloon Bouquet",
+    theme: ["Pastel", "Candy Pop"],
+    style: ["Table Setup"],
+    images: [IMG.balloonGarland, IMG.goldBalloons, IMG.balloonArchColor],
+    price: 499,
+    mrp: 699,
+    badges: ["Under ₹999"],
+    numberOfBalloons: 15,
+    isCustomizable: true,
+    ratingSeed: 36,
+    whatsIncluded: ["15-balloon bouquet", "Ribbon & weight", "Free delivery"],
+    addOns: [commonAddOns.extraBalloons, commonAddOns.photoPrints],
+  }),
+  build({
+    name: "Fresh Flower Bouquet & Balloon Combo",
+    tagline: "A fresh flower bouquet paired with a balloon bunch",
+    category: "Anniversary",
+    decorationType: "Balloon Bouquet",
+    theme: ["Floral"],
+    style: ["Table Setup"],
+    images: [IMG.flowerDecor, IMG.balloonGarland, IMG.romanticRoom],
+    price: 799,
+    mrp: 1099,
+    numberOfBalloons: 12,
+    ratingSeed: 38,
+    whatsIncluded: ["Fresh flower bouquet", "12-balloon bunch", "Free delivery"],
+  }),
+  build({
+    name: "Terrace Canopy Fairy Light Setup",
+    tagline: "String lights & canopy draping for a starry-night terrace",
+    category: "Romantic",
+    secondaryCategories: ["Anniversary"],
+    decorationType: "Canopy & Terrace",
+    theme: ["Boho"],
+    style: ["Terrace Setup"],
+    images: [IMG.terrace, IMG.candlelightDinner, IMG.romanticRoom],
+    price: 2299,
+    mrp: 2999,
+    isTrending: true,
+    ratingSeed: 40,
+    whatsIncluded: ["Fairy light canopy", "Floor cushions", "Lanterns", "Setup & takedown"],
+  }),
+  build({
+    name: "Minimal White & Gold Birthday Setup",
+    tagline: "Understated elegance in white & gold balloon tones",
+    category: "Birthday",
+    decorationType: "Balloon",
+    theme: ["Minimal", "Black & Gold"],
+    style: ["Balloon Arch"],
+    images: [IMG.goldBalloons, IMG.balloonArchColor, IMG.balloonCeiling],
+    price: 1399,
+    mrp: 1899,
+    badges: ["Under ₹1,999"],
+    numberOfBalloons: 110,
+    ratingSeed: 42,
+    whatsIncluded: ["White & gold balloon arch", "Number foil balloon", "Setup & takedown"],
+  }),
+  build({
+    name: "Space Galaxy Theme Kids Party",
+    tagline: "Rockets, stars & galaxy balloons for little astronauts",
+    category: "Kids Themes",
+    decorationType: "Room Decoration",
+    theme: ["Space"],
+    style: ["Backdrop", "Balloon Arch"],
+    images: [IMG.kidsTheme, IMG.balloonArchColor, IMG.balloonCeiling],
+    price: 1999,
+    mrp: 2699,
+    isNewArrival: true,
+    numberOfBalloons: 130,
+    ratingSeed: 44,
+    whatsIncluded: ["Galaxy backdrop", "Star & rocket cutouts", "Balloon arch", "Setup & takedown"],
+  }),
+  build({
+    name: "Boho Birthday Balloon Setup",
+    tagline: "Earthy tones and boho macrame accents",
+    category: "Birthday",
+    decorationType: "Balloon",
+    theme: ["Boho"],
+    style: ["Balloon Arch", "Backdrop"],
+    images: [IMG.balloonArchColor, IMG.terrace, IMG.balloonGarland],
+    price: 1599,
+    mrp: 2199,
+    isNewArrival: true,
+    numberOfBalloons: 100,
+    ratingSeed: 46,
+    whatsIncluded: ["Boho balloon arch", "Macrame backdrop accent", "Dried flower touches", "Setup & takedown"],
+  }),
+  build({
+    name: "New Year Balloon Countdown Setup",
+    tagline: "Black & gold balloons with a countdown backdrop",
+    category: "Festival",
+    decorationType: "Balloon",
+    theme: ["Black & Gold"],
+    style: ["Balloon Arch", "Backdrop"],
+    images: [IMG.balloonArchColor, IMG.goldBalloons, IMG.balloonCeiling],
+    price: 1799,
+    mrp: 2499,
+    isNewArrival: true,
+    numberOfBalloons: 120,
+    ratingSeed: 48,
+    whatsIncluded: ["Countdown backdrop", "Black & gold balloon arch", "Confetti poppers", "Setup & takedown"],
+  }),
+  build({
+    name: "Diwali Home Flower & Balloon Decor",
+    tagline: "Marigold strings and balloon accents for Diwali",
+    category: "Festival",
+    decorationType: "Combo",
+    theme: ["Floral"],
+    style: ["Balloon Arch"],
+    images: [IMG.flowerDecor, IMG.balloonArchColor, IMG.haldiDecor],
+    price: 1399,
+    mrp: 1899,
+    isNewArrival: true,
+    numberOfBalloons: 80,
+    ratingSeed: 50,
+    whatsIncluded: ["Marigold door toran", "Balloon door frame", "Diya arrangement", "Setup & takedown"],
+  }),
+  build({
+    name: "Premium Ceiling-to-Floor Balloon Drape",
+    tagline: "A dramatic floor-to-ceiling balloon drape wall",
+    category: "Birthday",
+    secondaryCategories: ["Wedding"],
+    decorationType: "Balloon",
+    theme: ["Royal", "Rose Gold"],
+    style: ["Backdrop", "Ceiling Decor"],
+    images: [IMG.premiumSetup, IMG.balloonCeiling, IMG.goldBalloons],
+    price: 4599,
+    mrp: 5999,
+    badges: ["Premium"],
+    isPremium: true,
+    numberOfBalloons: 220,
+    ratingSeed: 52,
+    whatsIncluded: ["Full wall balloon drape", "220 premium balloons", "Ambient uplighting", "Setup crew of 4"],
+  }),
+  build({
+    name: "Bulk Corporate Festival Decoration",
+    tagline: "Large-scale office festive decor for teams & floors",
+    category: "Corporate",
+    decorationType: "Combo",
+    theme: ["Minimal"],
+    style: ["Balloon Arch", "Backdrop"],
+    images: [IMG.officeParty, IMG.corporateEvent, IMG.balloonArchColor],
+    price: 6999,
+    mrp: 8999,
+    isPremium: true,
+    numberOfBalloons: 300,
+    ratingSeed: 54,
+    whatsIncluded: ["Entrance balloon arch", "Floor-wide balloon accents", "Branded standees", "Setup crew of 6"],
+  }),
+  build({
+    name: "Simple Balloon Bunch – Desk Surprise",
+    tagline: "A quick, affordable balloon bunch surprise",
+    category: "Birthday",
+    decorationType: "Balloon Bouquet",
+    theme: ["Candy Pop"],
+    style: ["Table Setup"],
+    images: [IMG.balloonGarland, IMG.balloonArchColor, IMG.goldBalloons],
+    price: 349,
+    mrp: 499,
+    badges: ["Under ₹999"],
+    numberOfBalloons: 10,
+    ratingSeed: 56,
+    whatsIncluded: ["10-balloon bunch", "Ribbon curl", "Free delivery within city"],
+  }),
+];
+
+export function getProductBySlug(slug: string) {
+  return products.find((p) => p.slug === slug);
+}
+
+export function getRelatedProducts(product: Product, count = 4) {
+  return products
+    .filter(
+      (p) =>
+        p.id !== product.id &&
+        (p.category === product.category || p.decorationType === product.decorationType)
+    )
+    .slice(0, count);
+}
+
+export function searchProducts(query: string) {
+  const q = query.trim().toLowerCase();
+  if (!q) return [];
+  return products.filter((p) => {
+    return (
+      p.name.toLowerCase().includes(q) ||
+      p.category.toLowerCase().includes(q) ||
+      p.theme.some((t) => t.toLowerCase().includes(q)) ||
+      p.decorationType.toLowerCase().includes(q) ||
+      p.tagline.toLowerCase().includes(q)
+    );
+  });
+}
