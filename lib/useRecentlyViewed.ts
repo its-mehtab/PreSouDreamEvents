@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-const KEY = "occasio-recently-viewed";
+const KEY = "presou-recently-viewed";
 
 export function recordView(productId: string) {
   try {

@@ -21,7 +21,7 @@ export default function AccountPage() {
           <p className="font-semibold">Guest User</p>
           <p className="text-sm text-ink/50">Sign in to sync your bookings across devices</p>
         </div>
-        <button className="btn-secondary ml-auto !px-4 !py-2 text-xs">Sign In</button>
+        <Link href="/login" className="btn-secondary ml-auto !px-4 !py-2 text-xs">Sign In</Link>
       </div>
 
       <div className="mt-5 divide-y divide-ink/8 overflow-hidden rounded-2xl border border-ink/10 bg-white">

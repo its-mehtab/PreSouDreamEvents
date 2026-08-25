@@ -9,7 +9,7 @@ interface LocationContextValue {
 }
 
 const LocationContext = createContext<LocationContextValue | null>(null);
-const STORAGE_KEY = "occasio-city-v1";
+const STORAGE_KEY = "presou-city-v1";
 
 export function LocationProvider({ children }: { children: ReactNode }) {
   const [city, setCityState] = useState<string>(cities[0]);

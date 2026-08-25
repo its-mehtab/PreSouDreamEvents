@@ -1,8 +1,7 @@
 import { Product, CityAvailability, Review, AddOn, CustomizationOption } from "@/lib/types";
 import { cities } from "@/lib/data/categories";
 
-let uid = 1000;
-const nextId = () => (uid++).toString();
+// Deterministic IDs are required for Next.js SSR/Client hydration matching
 
 const REVIEW_POOL: Omit<Review, "id" | "city">[] = [
   { author: "Priya S.", rating: 5, date: "2026-06-12", comment: "The setup looked even better than the pictures. Team arrived on time and cleaned up after." },
@@ -19,7 +18,7 @@ function makeReviews(n: number, cityPool: string[]): Review[] {
   const out: Review[] = [];
   for (let i = 0; i < n; i++) {
     const r = REVIEW_POOL[i % REVIEW_POOL.length];
-    out.push({ ...r, id: nextId(), city: cityPool[i % cityPool.length] });
+    out.push({ ...r, id: `rev-${i}`, city: cityPool[i % cityPool.length] });
   }
   return out;
 }
@@ -36,20 +35,22 @@ function makeAvailability(pool: string[]): CityAvailability[] {
 }
 
 const commonAddOns: Record<string, AddOn> = {
-  ledName: { id: "addon-led-name", name: "LED Name Light", price: 349 },
-  cakeTable: { id: "addon-cake-table", name: "Decorated Cake Table", price: 499 },
-  photoPrints: { id: "addon-photo-prints", name: "Photo Prints Garland", price: 299 },
-  candles: { id: "addon-candles", name: "Candle Path (30 pcs)", price: 249 },
-  welcomeBoard: { id: "addon-welcome-board", name: "Welcome Board", price: 399 },
-  fogEntry: { id: "addon-fog", name: "Fog Entry Effect", price: 899 },
-  photographer: { id: "addon-photographer", name: "1-Hour Photographer", price: 1499 },
-  rosePetals: { id: "addon-rose-petals", name: "Rose Petal Trail", price: 349 },
-  extraBalloons: { id: "addon-extra-balloons", name: "50 Extra Balloons", price: 299 },
-  smokeBomb: { id: "addon-smoke-bomb", name: "Colour Smoke (2 pcs)", price: 449 },
+  ledName:       { id: "addon-led-name",        name: "LED Name Light",        price: 349,  image: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=200&q=70" },
+  cakeTable:     { id: "addon-cake-table",       name: "Decorated Cake Table",  price: 499,  image: "https://images.unsplash.com/photo-1558636508-e0db3814bd1d?w=200&q=70" },
+  photoPrints:   { id: "addon-photo-prints",     name: "Photo Prints Garland",  price: 299,  image: "https://images.unsplash.com/photo-1502780809386-a7e1afc2e3a5?w=200&q=70" },
+  candles:       { id: "addon-candles",          name: "Candle Path (30 pcs)",  price: 249,  image: "https://images.unsplash.com/photo-1519710164239-da123dc03ef4?w=200&q=70" },
+  welcomeBoard:  { id: "addon-welcome-board",    name: "Welcome Board",         price: 399,  image: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=200&q=70" },
+  fogEntry:      { id: "addon-fog",              name: "Fog Entry Effect",      price: 899,  image: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=200&q=70" },
+  photographer:  { id: "addon-photographer",     name: "1-Hour Photographer",   price: 1499, image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=200&q=70" },
+  rosePetals:    { id: "addon-rose-petals",      name: "Rose Petal Trail",      price: 349,  image: "https://images.unsplash.com/photo-1490750967868-88df5691cc73?w=200&q=70" },
+  extraBalloons: { id: "addon-extra-balloons",   name: "50 Extra Balloons",     price: 299,  image: "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?w=200&q=70" },
+  smokeBomb:     { id: "addon-smoke-bomb",       name: "Colour Smoke (2 pcs)",  price: 449,  image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=200&q=70" },
+  fairyLights:   { id: "addon-fairy-lights",     name: "Fairy Light Curtain",   price: 599,  image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=70" },
+  customCake:    { id: "addon-custom-cake",      name: "Custom Theme Cake",     price: 799,  image: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=200&q=70" },
 };
 
 const standardCustomizations: CustomizationOption[] = [
-  { id: "cust-colors", label: "Balloon Colour Palette", type: "color", choices: ["Rose Gold", "Pastel Mix", "Red & White", "Black & Gold", "Blue & Silver"] },
+  { id: "cust-colors", label: "Balloon Colour Palette", type: "color", choices: ["Same as Image", "Rose Gold", "Pastel Mix", "Red & White", "Black & Gold", "Blue & Silver"] },
   { id: "cust-name", label: "Name on Backdrop", type: "text" },
   { id: "cust-age", label: "Age / Number Foil", type: "text" },
   { id: "cust-message", label: "Custom Message", type: "text" },
@@ -102,8 +103,8 @@ function build(a: BuildArgs): Product {
   const reviewCount = 24 + ((a.ratingSeed ?? 1) * 17) % 260;
   const rating = Math.round((3.9 + (((a.ratingSeed ?? 1) * 37) % 11) / 10) * 10) / 10;
   return {
-    id: nextId(),
-    slug: slugify(a.name) + "-" + nextId(),
+    id: slugify(a.name),
+    slug: slugify(a.name),
     name: a.name,
     tagline: a.tagline,
     category: a.category,
@@ -125,7 +126,7 @@ function build(a: BuildArgs): Product {
     isNewArrival: a.isNewArrival ?? false,
     cities: makeAvailability(cityPool),
     whatsIncluded: a.whatsIncluded,
-    addOns: a.addOns ?? [commonAddOns.ledName, commonAddOns.cakeTable, commonAddOns.photoPrints, commonAddOns.candles],
+    addOns: a.addOns ?? [commonAddOns.ledName, commonAddOns.cakeTable, commonAddOns.photoPrints, commonAddOns.candles, commonAddOns.fairyLights, commonAddOns.customCake],
     customizations: a.customizations ?? standardCustomizations,
     setupInfo: "Our decorators arrive 60–90 minutes prior to your slot with all material and complete setup on site.",
     cancellationInfo: "Free cancellation up to 48 hours before the event. Rescheduling is free up to 24 hours before.",

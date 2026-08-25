@@ -7,6 +7,7 @@ import { products } from "@/lib/data/products";
 import { cities, allThemes } from "@/lib/data/categories";
 import ProductCard from "@/components/product/ProductCard";
 import { cn } from "@/lib/utils";
+import { DatePicker } from "@/components/ui/DatePicker";
 
 const OCCASIONS = ["Birthday", "Anniversary", "Baby Shower", "Kids Themes", "Romantic", "Wedding", "Corporate"];
 const BUDGETS = [
@@ -151,13 +152,7 @@ export default function CelebrationForm() {
             )}
             {step === 4 && (
               <StepShell icon={CalendarDays} title="When's the big day?">
-                <input
-                  type="date"
-                  value={date}
-                  min={new Date().toISOString().split("T")[0]}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="input-field"
-                />
+                <DatePicker value={date} onChange={setDate} />
               </StepShell>
             )}
           </motion.div>

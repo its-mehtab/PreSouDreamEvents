@@ -16,3 +16,4 @@ const nextConfig = {
 };
 
 export default nextConfig;
+// Force Next.js dev server restart

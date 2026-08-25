@@ -12,6 +12,7 @@ interface Props {
   customization?: string;
   variant?: "banner" | "button" | "floating";
   className?: string;
+  label?: string;
 }
 
 export default function WhatsAppCTA({
@@ -23,9 +24,10 @@ export default function WhatsAppCTA({
   customization,
   variant = "button",
   className = "",
+  label = "Need it today? WhatsApp us",
 }: Props) {
   const lines = [
-    "Hi PreSou Dream Events! I need decoration set up TODAY. Can you confirm same-day availability?",
+    "Hi PreSou Dream Events! I need decoration set up. Can you confirm availability?",
     productName ? `Decoration: ${productName}` : null,
     city ? `City: ${city}` : null,
     venue ? `Venue: ${venue}` : null,
@@ -81,7 +83,7 @@ export default function WhatsAppCTA({
       className={`inline-flex items-center justify-center gap-2 rounded-full border border-leaf-500 px-4 py-2.5 text-sm font-semibold text-leaf-600 hover:bg-leaf-50 ${className}`}
     >
       <MessageCircle size={16} />
-      Need it today? WhatsApp us
+      {label}
     </a>
   );
 }

@@ -1,7 +1,7 @@
 import ShopExperience from "@/components/shop/ShopExperience";
 import { products } from "@/lib/data/products";
 
-export const metadata = { title: "Offers & Deals — Occasio" };
+export const metadata = { title: "Offers & Deals — PreSou" };
 
 export default function OffersPage({ searchParams }: { searchParams: { maxPrice?: string } }) {
   const deals = products.filter((p) => p.mrp > p.price);

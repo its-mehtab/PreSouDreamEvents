@@ -17,7 +17,7 @@ const POPULAR_SEARCHES = [
   "decoration under 2000",
 ];
 
-const RECENT_KEY = "occasio-recent-searches";
+const RECENT_KEY = "presou-recent-searches";
 
 export default function SearchBar({ variant = "desktop" }: { variant?: "desktop" | "mobile" }) {
   const router = useRouter();
@@ -31,7 +31,7 @@ export default function SearchBar({ variant = "desktop" }: { variant?: "desktop"
       const raw = localStorage.getItem(RECENT_KEY);
       // eslint-disable-next-line react-hooks/set-state-in-effect
       if (raw) setRecent(JSON.parse(raw));
-    } catch {}
+    } catch { }
   }, []);
 
   useEffect(() => {
@@ -79,7 +79,7 @@ export default function SearchBar({ variant = "desktop" }: { variant?: "desktop"
           onFocus={() => setOpen(true)}
           onKeyDown={(e) => e.key === "Enter" && commitSearch(query)}
           placeholder="Search 'birthday balloon decoration'"
-          className="w-full bg-transparent text-sm outline-none placeholder:text-ink/40"
+          className="w-full bg-transparent text-sm outline-0 border-0 placeholder:text-ink/40"
         />
         {query && (
           <button onClick={() => setQuery("")} aria-label="Clear search">

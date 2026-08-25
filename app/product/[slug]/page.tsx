@@ -4,20 +4,23 @@ import { products, getProductBySlug } from "@/lib/data/products";
 import ProductDetailClient from "@/components/product/ProductDetailClient";
 
 export function generateStaticParams() {
+  // force rebuild
   return products.map((p) => ({ slug: p.slug }));
 }
 
-export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
-  const product = getProductBySlug(params.slug);
-  if (!product) return { title: "Product Not Found — Occasio" };
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const product = getProductBySlug(slug);
+  if (!product) return { title: "Product Not Found — PreSou" };
   return {
-    title: `${product.name} — Occasio`,
+    title: `${product.name} — PreSou`,
     description: product.tagline,
   };
 }
 
-export default function ProductPage({ params }: { params: { slug: string } }) {
-  const product = getProductBySlug(params.slug);
+export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const product = getProductBySlug(slug);
   if (!product) notFound();
   return <ProductDetailClient product={product} />;
 }

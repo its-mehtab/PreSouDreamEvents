@@ -1,4 +1,4 @@
-# Occasio — Balloon & Event Decoration Ecommerce Web App
+# PreSou Dream Events — Balloon & Event Decoration Ecommerce Web App
 
 A production-ready decoration ecommerce web app built with **Next.js 14 (App Router)**,
 **TypeScript**, and **Tailwind CSS**. Shop balloon arches, room decorations, romantic setups,

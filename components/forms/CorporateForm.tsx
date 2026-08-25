@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { CheckCircle2 } from "lucide-react";
 import { cities } from "@/lib/data/categories";
+import { Select } from "@/components/ui/Select";
 
 const schema = z.object({
   company: z.string().min(2, "Enter company name"),
@@ -31,7 +32,7 @@ function Field({ label, error, children }: { label: string; error?: string; chil
 
 export default function CorporateForm() {
   const [submitted, setSubmitted] = useState(false);
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormValues>({ resolver: zodResolver(schema) });
+  const { register, handleSubmit, control, formState: { errors, isSubmitting } } = useForm<FormValues>({ resolver: zodResolver(schema) });
 
   function onSubmit() {
     return new Promise((resolve) => setTimeout(() => { setSubmitted(true); resolve(true); }, 700));
@@ -56,20 +57,22 @@ export default function CorporateForm() {
         <Field label="Phone" error={errors.phone?.message}><input {...register("phone")} className="input-field" /></Field>
         <Field label="Email" error={errors.email?.message}><input {...register("email")} className="input-field" /></Field>
         <Field label="Event Type" error={errors.eventType?.message}>
-          <select {...register("eventType")} className="input-field">
-            <option value="">Select type</option>
-            <option>Product Launch</option>
-            <option>Office Celebration</option>
-            <option>Inauguration</option>
-            <option>Festival Decoration</option>
-            <option>Bulk / Multi-location</option>
-          </select>
+          <Controller
+            control={control}
+            name="eventType"
+            render={({ field }) => (
+              <Select options={["Product Launch", "Office Celebration", "Inauguration", "Festival Decoration", "Bulk / Multi-location"]} value={field.value} onChange={field.onChange} placeholder="Select type" />
+            )}
+          />
         </Field>
         <Field label="City" error={errors.city?.message}>
-          <select {...register("city")} className="input-field">
-            <option value="">Select city</option>
-            {cities.map((c) => <option key={c}>{c}</option>)}
-          </select>
+          <Controller
+            control={control}
+            name="city"
+            render={({ field }) => (
+              <Select options={cities} value={field.value} onChange={field.onChange} placeholder="Select city" />
+            )}
+          />
         </Field>
         <Field label="Approx. Attendees" error={errors.guestCount?.message}><input {...register("guestCount")} className="input-field" /></Field>
       </div>

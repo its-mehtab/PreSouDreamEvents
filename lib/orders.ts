@@ -3,7 +3,7 @@
 import { Order, OrderStatus, CartItem } from "@/lib/types";
 import { products } from "@/lib/data/products";
 
-const KEY = "occasio-orders-v1";
+const KEY = "presou-orders-v1";
 const STATUS_FLOW: OrderStatus[] = [
   "Confirmed",
   "Decorator Assigned",
@@ -66,7 +66,7 @@ export function createOrder(args: {
     placedAt: new Date().toISOString(),
   };
   writeAll([order, ...orders]);
-  localStorage.setItem("occasio-last-order", order.id);
+  localStorage.setItem("presou-last-order", order.id);
   return order;
 }
 
@@ -79,5 +79,5 @@ export function getOrder(id: string): Order | undefined {
 }
 
 export function getLastOrderId(): string | null {
-  return localStorage.getItem("occasio-last-order");
+  return localStorage.getItem("presou-last-order");
 }

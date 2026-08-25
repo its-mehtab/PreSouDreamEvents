@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { CheckCircle2, UploadCloud } from "lucide-react";
 import { cities, allThemes } from "@/lib/data/categories";
+import { Select } from "@/components/ui/Select";
+import { DatePicker } from "@/components/ui/DatePicker";
 
 const schema = z.object({
   occasion: z.string().min(2, "Tell us the occasion"),
@@ -36,6 +38,7 @@ export default function CustomForm() {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({ resolver: zodResolver(schema) });
 
@@ -68,21 +71,22 @@ export default function CustomForm() {
           <input {...register("occasion")} className="input-field" placeholder="e.g. 25th Anniversary" />
         </Field>
         <Field label="Budget Range" error={errors.budget?.message}>
-          <select {...register("budget")} className="input-field">
-            <option value="">Select budget</option>
-            <option>Under ₹5,000</option>
-            <option>₹5,000 – ₹15,000</option>
-            <option>₹15,000 – ₹50,000</option>
-            <option>Above ₹50,000</option>
-          </select>
+          <Controller
+            control={control}
+            name="budget"
+            render={({ field }) => (
+              <Select options={["Under ₹5,000", "₹5,000 – ₹15,000", "₹15,000 – ₹50,000", "Above ₹50,000"]} value={field.value} onChange={field.onChange} placeholder="Select budget" />
+            )}
+          />
         </Field>
         <Field label="Preferred Theme" error={errors.theme?.message}>
-          <select {...register("theme")} className="input-field">
-            <option value="">Select theme</option>
-            {allThemes.map((t) => (
-              <option key={t}>{t}</option>
-            ))}
-          </select>
+          <Controller
+            control={control}
+            name="theme"
+            render={({ field }) => (
+              <Select options={allThemes} value={field.value} onChange={field.onChange} placeholder="Select theme" />
+            )}
+          />
         </Field>
         <Field label="Preferred Colours" error={errors.colors?.message}>
           <input {...register("colors")} className="input-field" placeholder="e.g. Blush pink & gold" />
@@ -91,15 +95,22 @@ export default function CustomForm() {
           <input {...register("venue")} className="input-field" placeholder="e.g. Rooftop terrace" />
         </Field>
         <Field label="City" error={errors.city?.message}>
-          <select {...register("city")} className="input-field">
-            <option value="">Select city</option>
-            {cities.map((c) => (
-              <option key={c}>{c}</option>
-            ))}
-          </select>
+          <Controller
+            control={control}
+            name="city"
+            render={({ field }) => (
+              <Select options={cities} value={field.value} onChange={field.onChange} placeholder="Select city" />
+            )}
+          />
         </Field>
         <Field label="Event Date" error={errors.eventDate?.message}>
-          <input type="date" {...register("eventDate")} className="input-field" />
+          <Controller
+            control={control}
+            name="eventDate"
+            render={({ field }) => (
+              <DatePicker value={field.value} onChange={field.onChange} />
+            )}
+          />
         </Field>
         <Field label="Guest Count" error={errors.guestCount?.message}>
           <input {...register("guestCount")} className="input-field" placeholder="e.g. 40" />

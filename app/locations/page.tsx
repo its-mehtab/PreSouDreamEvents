@@ -3,7 +3,7 @@ import { MapPin, ArrowRight } from "lucide-react";
 import { cities } from "@/lib/data/categories";
 import { products } from "@/lib/data/products";
 
-export const metadata = { title: "Cities We Serve — Occasio" };
+export const metadata = { title: "Cities We Serve — PreSou" };
 
 export default function LocationsPage() {
   return (

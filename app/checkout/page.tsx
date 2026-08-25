@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -14,6 +14,8 @@ import { cities } from "@/lib/data/categories";
 import { User, Phone, Mail, MapPin, Home, CalendarDays, Clock, MessageSquareText, Wallet, CreditCard, Landmark, HandCoins, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
+import { Select } from "@/components/ui/Select";
+import { DatePicker } from "@/components/ui/DatePicker";
 
 const VENUES = ["Home", "Hotel", "Hall", "Terrace", "Outdoor", "Office", "Other"];
 const TIME_SLOTS = ["9:00 AM", "11:00 AM", "1:00 PM", "3:00 PM", "5:00 PM", "7:00 PM"];
@@ -37,6 +39,7 @@ export default function CheckoutPage() {
     handleSubmit,
     watch,
     setValue,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
@@ -100,11 +103,13 @@ export default function CheckoutPage() {
                 <input {...register("email")} className="input-field" placeholder="you@email.com" />
               </Field>
               <Field label="City" icon={MapPin} error={errors.city?.message}>
-                <select {...register("city")} className="input-field">
-                  {cities.map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
+                <Controller
+                  control={control}
+                  name="city"
+                  render={({ field }) => (
+                    <Select options={cities} value={field.value} onChange={field.onChange} />
+                  )}
+                />
               </Field>
               <div className="sm:col-span-2">
                 <Field label="Full Address" icon={Home} error={errors.address?.message}>
@@ -118,21 +123,31 @@ export default function CheckoutPage() {
             <legend className="mb-3 px-1 font-display text-lg font-semibold">Event Details</legend>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <Field label="Venue" icon={Home} error={errors.venue?.message}>
-                <select {...register("venue")} className="input-field">
-                  {VENUES.map((v) => (
-                    <option key={v} value={v}>{v}</option>
-                  ))}
-                </select>
+                <Controller
+                  control={control}
+                  name="venue"
+                  render={({ field }) => (
+                    <Select options={VENUES} value={field.value} onChange={field.onChange} />
+                  )}
+                />
               </Field>
               <Field label="Event Date" icon={CalendarDays} error={errors.eventDate?.message}>
-                <input type="date" {...register("eventDate")} className="input-field" />
+                <Controller
+                  control={control}
+                  name="eventDate"
+                  render={({ field }) => (
+                    <DatePicker value={field.value} onChange={field.onChange} />
+                  )}
+                />
               </Field>
               <Field label="Time Slot" icon={Clock} error={errors.eventTime?.message}>
-                <select {...register("eventTime")} className="input-field">
-                  {TIME_SLOTS.map((t) => (
-                    <option key={t} value={t}>{t}</option>
-                  ))}
-                </select>
+                <Controller
+                  control={control}
+                  name="eventTime"
+                  render={({ field }) => (
+                    <Select options={TIME_SLOTS} value={field.value} onChange={field.onChange} />
+                  )}
+                />
               </Field>
             </div>
             <div className="mt-4">

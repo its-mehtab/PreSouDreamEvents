@@ -34,7 +34,7 @@ interface CartContextValue {
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
-const STORAGE_KEY = "occasio-cart-v1";
+const STORAGE_KEY = "presou-cart-v1";
 
 const VALID_COUPONS: Record<string, number> = {
   FIRST100: 100,

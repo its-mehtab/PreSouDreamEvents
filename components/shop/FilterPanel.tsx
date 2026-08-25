@@ -3,6 +3,7 @@
 import { FilterState, DEFAULT_MAX_PRICE } from "@/lib/filtering";
 import { allThemes, allStyles, cities } from "@/lib/data/categories";
 import { formatPrice, cn } from "@/lib/utils";
+import { Select } from "@/components/ui/Select";
 
 const OCCASIONS = [
   "Birthday", "Anniversary", "Baby Shower", "Kids Themes", "Romantic", "Wedding",
@@ -139,18 +140,12 @@ export default function FilterPanel({
       </Section>
 
       <Section title="City Availability">
-        <select
+        <Select
+          options={[{ label: "Any city", value: "" }, ...cities]}
           value={filters.city ?? ""}
-          onChange={(e) => onChange({ ...filters, city: e.target.value || null })}
-          className="input-field"
-        >
-          <option value="">Any city</option>
-          {cities.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
+          onChange={(v) => onChange({ ...filters, city: v || null })}
+          placeholder="Any city"
+        />
       </Section>
 
       <Section title="More filters">

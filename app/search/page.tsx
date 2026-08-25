@@ -1,7 +1,7 @@
 import ShopExperience from "@/components/shop/ShopExperience";
 import { searchProducts } from "@/lib/data/products";
 
-export const metadata = { title: "Search Results — Occasio" };
+export const metadata = { title: "Search Results — PreSou" };
 
 export default function SearchPage({ searchParams }: { searchParams: { q?: string } }) {
   const q = searchParams.q ?? "";
