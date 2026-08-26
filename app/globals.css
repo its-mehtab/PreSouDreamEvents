@@ -53,9 +53,9 @@
   --color-leaf-600:      #166F46;
 
   /* ── Typography ── */
-  --font-sans:     var(--font-manrope), -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-sans:     var(--font-outfit), -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   --font-display:  var(--font-playfair), Georgia, Cambria, "Times New Roman", serif;
-  --font-mono:     var(--font-manrope), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-mono:     var(--font-outfit), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   /* ── Border radius ── */
   --radius-xl2: 1.25rem;
@@ -310,4 +310,10 @@ body {
 
 .text-balance {
   text-wrap: balance;
+}
+
+/* Remove default focus rings */
+input:focus, textarea:focus, select:focus {
+  outline: none !important;
+  box-shadow: none !important;
 }

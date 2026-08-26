@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageCircle } from "lucide-react";
+import WhatsAppIcon from "./WhatsAppIcon";
 import { whatsappLink } from "@/lib/utils";
 
 interface Props {
@@ -12,7 +12,7 @@ interface Props {
   customization?: string;
   variant?: "banner" | "button" | "floating";
   className?: string;
-  label?: string;
+  label?: React.ReactNode;
 }
 
 export default function WhatsAppCTA({
@@ -47,7 +47,7 @@ export default function WhatsAppCTA({
         aria-label="Need it today? WhatsApp us"
         className="fixed bottom-5 right-5 z-40 flex items-center gap-2 rounded-full bg-leaf-500 px-4 py-3 text-sm font-semibold text-white shadow-pop transition-transform hover:scale-105 active:scale-95"
       >
-        <MessageCircle size={20} />
+        <WhatsAppIcon size={20} />
         <span className="hidden sm:inline">Need it today?</span>
       </a>
     );
@@ -63,7 +63,7 @@ export default function WhatsAppCTA({
       >
         <div className="flex items-center gap-3">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-leaf-500 text-white">
-            <MessageCircle size={18} />
+            <WhatsAppIcon size={18} />
           </span>
           <div>
             <p className="text-sm font-semibold text-leaf-600">Need it today?</p>
@@ -82,7 +82,7 @@ export default function WhatsAppCTA({
       rel="noopener noreferrer"
       className={`inline-flex items-center justify-center gap-2 rounded-full border border-leaf-500 px-4 py-2.5 text-sm font-semibold text-leaf-600 hover:bg-leaf-50 ${className}`}
     >
-      <MessageCircle size={16} />
+      <WhatsAppIcon size={16} />
       {label}
     </a>
   );

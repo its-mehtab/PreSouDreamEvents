@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Manrope, Playfair_Display } from "next/font/google";
+import { Outfit, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
@@ -9,10 +9,10 @@ import Header from "@/components/header/Header";
 import Footer from "@/components/Footer";
 import CartDrawer from "@/components/header/CartDrawer";
 
-const manrope = Manrope({
+const outfit = Outfit({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
-  variable: "--font-manrope",
+  variable: "--font-outfit",
   display: "swap",
 });
 
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${manrope.variable} ${playfairDisplay.variable}`}>
+    <html lang="en" className={`${outfit.variable} ${playfairDisplay.variable}`}>
       <body className="font-sans">
         <LocationProvider>
           <WishlistProvider>

@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   Heart, Share2, Star, MapPin, CalendarDays, Clock, Home,
-  ChevronDown, ChevronUp, ShieldCheck, RefreshCcw, Minus, Plus, X, Check, ChevronRight, Zap, ChevronLeft, CheckCircle2
+  ChevronDown, ChevronUp, ShieldCheck, RefreshCcw, Minus, Plus, X, Check, ChevronRight, Zap, ChevronLeft, CheckCircle2, Tag, Headphones, MessageCircle
 } from "lucide-react";
 import { Product, Venue } from "@/lib/types";
 import { formatPrice, discountPercent, cn } from "@/lib/utils";
@@ -17,10 +17,12 @@ import { recordView, useRecentlyViewed } from "@/lib/useRecentlyViewed";
 import { products, getRelatedProducts } from "@/lib/data/products";
 import ProductRail from "@/components/product/ProductRail";
 import WhatsAppCTA from "@/components/WhatsAppCTA";
+import WhatsAppIcon from "@/components/WhatsAppIcon";
 import { toast } from "sonner";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { CustomColorPicker, BalloonIcon, SINGLE_BALLOON_COLORS } from "@/components/ui/CustomColorPicker";
 import { AnimatePresence, motion } from "framer-motion";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 
 const TIME_SLOTS = ["9 AM – 11 AM", "11 AM – 1 PM", "1 PM – 3 PM", "3 PM – 5 PM", "5 PM – 7 PM", "7 PM – 9 PM", "9 PM – 11 PM"];
 
@@ -63,6 +65,7 @@ function getBalloonColors(choice: string): string[] {
 }
 
 export default function ProductDetailClient({ product }: { product: Product }) {
+  const [addOnsRef] = useAutoAnimate();
   const { toggle, isWishlisted } = useWishlist();
   const { addItem } = useCart();
   const { city } = useLocation();
@@ -240,89 +243,103 @@ export default function ProductDetailClient({ product }: { product: Product }) {
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="mb-2 flex flex-wrap gap-1.5">
-                  {product.badges.map((b) => (
-                    <span key={b} className="badge bg-marigold-400 text-ink">{b}</span>
-                  ))}
-                  <span className="badge bg-grape-100 text-grape-700">{product.category}</span>
+                  <span className="badge bg-grape-100 text-grape-700 uppercase tracking-widest text-[9px] font-bold px-2 py-0.5">{product.category}</span>
                 </div>
-                <h1 className="font-display text-2xl font-bold leading-snug text-ink sm:text-3xl">
+                <h1 className="font-display text-2xl sm:text-[32px] font-bold leading-[1.1] text-grape-900">
                   {product.name}
                 </h1>
-                <p className="mt-1.5 text-sm text-ink/55">{product.tagline}</p>
+                <p className="mt-2 text-[15px] text-ink/60">{product.tagline || 'Celebrate your years together with a photo memory wall'}</p>
+                {/* Rating below title */}
+                <a href="#tabs" className="mt-3 flex w-fit items-center gap-1.5 text-sm">
+                  <Star size={16} className="fill-grape-700 text-grape-700" />
+                  <span className="font-bold text-grape-900">{product.rating}</span>
+                  <span className="text-ink/30 mx-1">|</span>
+                  <span className="text-ink/50 hover:underline">{product.reviewCount} reviews</span>
+                </a>
               </div>
               <div className="flex shrink-0 gap-2">
                 <button
-                  onClick={() => toggle(product.id, product.name)}
-                  className="flex h-9 w-9 items-center justify-center rounded-full border border-ink/12 bg-white transition-all hover:border-punch-300 hover:bg-punch-50"
-                  aria-label="Toggle wishlist"
-                >
-                  <Heart size={16} className={isWishlisted(product.id) ? "fill-punch-500 text-punch-500" : "text-ink/50"} />
-                </button>
-                <button
                   onClick={() => {
-                    if (typeof navigator !== "undefined" && navigator.share) {
+                    if (typeof navigator !== 'undefined' && navigator.share) {
                       navigator.share({ title: product.name, url: window.location.href }).catch(() => { });
                     } else {
-                      toast.success("Link copied!");
+                      toast.success('Link copied!');
                     }
                   }}
-                  className="flex h-9 w-9 items-center justify-center rounded-full border border-ink/12 bg-white transition-all hover:bg-paper"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-white transition-all shadow-sm border border-ink/5 hover:bg-grape-50"
                   aria-label="Share"
                 >
-                  <Share2 size={16} className="text-ink/50" />
+                  <Share2 size={18} className="text-ink/60" />
+                </button>
+                <button
+                  onClick={() => toggle(product.id, product.name)}
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-white transition-all shadow-sm border border-ink/5 hover:bg-punch-50"
+                  aria-label="Toggle wishlist"
+                >
+                  <Heart size={18} className={isWishlisted(product.id) ? 'fill-punch-500 text-punch-500' : 'text-ink/60'} />
                 </button>
               </div>
             </div>
-
-            {/* Rating pill */}
-            <a href="#tabs" className="mt-3 flex w-fit items-center gap-2 text-sm">
-              <span className="flex items-center gap-1 rounded-full bg-leaf-50 px-2.5 py-1 font-bold text-leaf-700">
-                <Star size={12} className="fill-leaf-600" /> {product.rating}
-              </span>
-              <span className="text-ink/45 hover:underline">{product.reviewCount} reviews</span>
-            </a>
           </div>
 
-          {/* ── Price block ── */}
-          <div className="rounded-2xl bg-paper border border-ink/8 p-4">
-            <div className="flex items-baseline gap-2.5">
-              <span className="font-mono text-3xl font-bold text-ink">{formatPrice(product.price)}</span>
+          {/* ── Price block (Redesigned) ── */}
+          <div className="rounded-3xl bg-white border border-ink/5 shadow-[0_4px_20px_rgb(0,0,0,0.04)] p-6">
+            <div className="flex items-center gap-3">
+              <span className="font-display text-4xl font-bold text-grape-900">{formatPrice(product.price)}</span>
               {product.mrp > product.price && (
                 <>
-                  <span className="font-mono text-lg text-ink/35 line-through">{formatPrice(product.mrp)}</span>
-                  <span className="rounded-full bg-punch-100 px-2.5 py-0.5 text-xs font-bold text-punch-600">
-                    {discount}% off
+                  <span className="text-lg font-medium text-ink/40 line-through">{formatPrice(product.mrp)}</span>
+                  <span className="rounded-full bg-punch-50 px-2.5 py-1 text-[11px] font-bold tracking-wide text-punch-600">
+                    {discount}% OFF
                   </span>
                 </>
               )}
             </div>
+
             {product.mrp > product.price && (
-              <p className="mt-1 text-xs font-medium text-leaf-600">
+              <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-leaf-50 px-3 py-1.5 text-xs font-bold text-leaf-700">
+                <Tag size={12} className="fill-leaf-700" />
                 You save {formatPrice(product.mrp - product.price)} on this package
-              </p>
+              </div>
             )}
-            {/* City availability status */}
-            <div className={cn(
-              "mt-3 flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold",
-              cityAvailability?.status === "available" && "bg-leaf-50 text-leaf-700",
-              cityAvailability?.status === "limited" && "bg-marigold-50 text-marigold-700",
-              (!cityAvailability || cityAvailability.status === "unavailable") && "bg-punch-50 text-punch-600"
-            )}>
-              <MapPin size={12} />
-              {cityAvailability?.status === "available" && `Available in ${city} · Earliest slot ${cityAvailability.earliestSlot}`}
-              {cityAvailability?.status === "limited" && `Limited slots in ${city} · ${cityAvailability.earliestSlot}`}
-              {(!cityAvailability || cityAvailability.status === "unavailable") && `Not available in ${city} yet — contact us`}
+
+            {/* City availability status (Orange warning style) */}
+            <div className="mt-4 flex items-center gap-2 rounded-xl bg-marigold-50/50 px-4 py-3 text-[13px] font-semibold text-marigold-800 border border-marigold-100/50">
+              <Clock size={16} className="text-marigold-600" />
+              {cityAvailability?.status === 'available' && `Available in ${city} - Earliest slot ${cityAvailability.earliestSlot}`}
+              {cityAvailability?.status === 'limited' && `Limited slots in ${city} - ${cityAvailability.earliestSlot}`}
+              {(!cityAvailability || cityAvailability.status === 'unavailable') && `Not available in ${city} yet — contact us`}
+            </div>
+
+            {/* Top 3 Trust Badges */}
+            <div className="mt-6 flex flex-wrap items-center justify-center sm:justify-between gap-4 border-t border-ink/5 pt-5">
+              <div className="flex items-center gap-1.5">
+                <ShieldCheck size={14} className="text-leaf-600" />
+                <span className="text-[11px] font-bold text-ink/60">Secure Booking</span>
+              </div>
+              <div className="hidden sm:block h-3 w-px bg-ink/10"></div>
+              <div className="flex items-center gap-1.5">
+                <Heart size={14} className="text-marigold-600" />
+                <span className="text-[11px] font-bold text-ink/60">Satisfaction Guarantee</span>
+              </div>
+              <div className="hidden sm:block h-3 w-px bg-ink/10"></div>
+              <div className="flex items-center gap-1.5">
+                <Headphones size={14} className="text-grape-600" />
+                <span className="text-[11px] font-bold text-ink/60">Dedicated Support</span>
+              </div>
             </div>
           </div>
-
           {/* ── What's included ── */}
-          <div className="rounded-2xl border border-ink/8 p-5 bg-white shadow-sm">
-            <p className="mb-4 text-sm font-semibold text-ink">What&apos;s included</p>
-            <ul className="grid grid-cols-1 gap-y-3.5 sm:grid-cols-2 gap-x-6">
+          <div className="relative overflow-hidden rounded-3xl bg-white border border-ink/5 shadow-[0_4px_20px_rgb(0,0,0,0.04)] p-6 z-10">
+            {/* Background Blob decoration */}
+            <div className="absolute right-0 top-0 -z-10 w-48 h-48 bg-grape-50/80 rounded-full blur-2xl translate-x-1/2 -translate-y-1/4"></div>
+
+            <p className="mb-5 text-lg font-bold text-ink">What's Included</p>
+            <ul className="grid grid-cols-1 gap-y-4 sm:grid-cols-2 gap-x-6">
               {product.whatsIncluded.map((w) => (
-                <li key={w} className="flex items-start gap-3 text-[13px] text-ink/70 leading-relaxed">
-                  <div className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-leaf-50 text-leaf-500">
-                    <Check size={10} strokeWidth={3} />
+                <li key={w} className="flex items-start gap-3 text-[14px] font-medium text-ink/70 leading-relaxed">
+                  <div className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center text-leaf-600">
+                    <Check size={16} strokeWidth={3} />
                   </div>
                   {w}
                 </li>
@@ -332,8 +349,9 @@ export default function ProductDetailClient({ product }: { product: Product }) {
 
           {/* ── Customizations ── */}
           {product.customizations.length > 0 && (
-            <div className="rounded-2xl border border-ink/8 p-4 bg-paper/30">
-              <p className="mb-4 text-sm font-semibold text-ink">Customize Your Setup</p>
+            <div className="rounded-3xl bg-white border border-ink/5 shadow-[0_4px_20px_rgb(0,0,0,0.04)] p-6 z-10">
+              <p className="mb-1 text-lg font-bold text-ink">Customize Your Setup</p>
+              <p className="mb-6 text-[13px] text-ink/50">Make it uniquely yours</p>
               <div className="space-y-5">
                 {product.customizations.map((c) => (
                   <div key={c.id}>
@@ -442,7 +460,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
           )}
 
           {/* ── Date & Time Section ── */}
-          <div className="relative rounded-2xl border border-ink/8 p-5 bg-white shadow-sm">
+          <div className="relative rounded-3xl border border-ink/5 bg-white shadow-[0_4px_20px_rgb(0,0,0,0.04)] p-6 z-10">
             <p className="mb-0.5 text-sm font-semibold text-ink">Choose Date & Time</p>
             <p className="mb-4 text-[13px] text-ink/50">When should we arrive to set up?</p>
 
@@ -543,10 +561,10 @@ export default function ProductDetailClient({ product }: { product: Product }) {
 
           {/* ── Add-ons ── */}
           {product.addOns.length > 0 && (
-            <div className="rounded-2xl border border-ink/8 p-4">
+            <div className="rounded-3xl border border-ink/5 bg-white shadow-[0_4px_20px_rgb(0,0,0,0.04)] p-6 z-10">
               <div className="mb-3 flex items-center justify-between">
                 <p className="text-sm font-semibold text-ink">
-                  Enhance Your Setup <span className="font-normal text-ink/40">(optional)</span>
+                  Enhance Your Setup <span className="font-medium text-ink/40">(optional)</span>
                 </p>
                 <div className="flex items-center gap-2">
                   {selectedAddOns.length > 0 && (
@@ -665,76 +683,216 @@ export default function ProductDetailClient({ product }: { product: Product }) {
           )}
 
           {/* ── Checkout Summary (Sticky Bottom Bar) ── */}
-          <div className="sticky bottom-4 z-40 mt-8 overflow-hidden rounded-2xl border border-ink/10 bg-white/95 backdrop-blur-md shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] transition-all lg:static lg:bottom-auto lg:z-auto lg:shadow-card lg:bg-white">
-            <div className="p-5">
-              {/* Add-ons Breakdown (only show if selected) */}
-              {selectedAddOns.length > 0 && (
-                <div className="mb-4 space-y-2 border-b border-dashed border-ink/10 pb-4 text-sm text-ink/70">
-                  <div className="flex justify-between">
-                    <span>Base Package</span>
-                    <span className="font-mono">{formatPrice(product.price)}</span>
-                  </div>
-                  <div className="flex justify-between text-grape-600 font-medium">
-                    <span>Add-ons ({selectedAddOns.length})</span>
-                    <span className="font-mono">+{formatPrice(addOnsTotal)}</span>
-                  </div>
-                </div>
-              )}
+          <div className="sticky bottom-4 z-40 mt-8 overflow-hidden rounded-[24px] bg-white shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all lg:relative lg:bottom-auto lg:z-auto border border-ink/5">
+            {/* Background Blob decoration */}
+            <div className="absolute right-0 top-0 -z-10 w-64 h-64 bg-grape-50/60 rounded-full blur-3xl translate-x-1/2 -translate-y-1/4"></div>
 
-              {/* Price Row */}
-              <div className="mb-5 flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
-                <div>
-                  <p className="text-sm font-bold text-ink">Total Amount</p>
-                  <p className="text-[11px] font-medium text-ink/40">inclusive of all taxes</p>
-                </div>
-                <div className="flex flex-col sm:items-end">
-                  <div className="flex items-center gap-2">
-                    {product.mrp > product.price && (
-                      <span className="font-mono text-sm text-ink/40 line-through">{formatPrice(product.mrp + addOnsTotal)}</span>
-                    )}
-                    <p className="font-mono text-[32px] font-extrabold leading-none tracking-tight text-ink">{formatPrice(total)}</p>
-                  </div>
+            {/* Main Content Area */}
+            <div className="p-5 sm:p-6 lg:p-7 flex flex-col lg:flex-row gap-6 lg:gap-10 items-start lg:items-center relative z-10">
+
+              {/* Left Column: Price Info */}
+              <div className="w-full flex-1">
+                {/* Add-ons Breakdown (only show if selected) */}
+                <AnimatePresence>
+                  {selectedAddOns.length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3, ease: 'easeInOut' }}
+                      className="overflow-hidden"
+                    >
+                      <div className="mb-4 space-y-2 border-b border-dashed border-ink/10 pb-4 text-[13px] text-ink/70">
+                        <div className="flex justify-between">
+                          <span>Base Package</span>
+                          <span className="font-mono">{formatPrice(product.price)}</span>
+                        </div>
+                        <div className="flex justify-between text-grape-600 font-medium">
+                          <span>Add-ons ({selectedAddOns.length})</span>
+                          <span className="font-mono">+{formatPrice(addOnsTotal)}</span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <p className="text-[10px] font-bold tracking-widest text-grape-400 mb-2 uppercase">Your Celebration, Our Care</p>
+                <p className="text-[17px] font-bold text-ink">Total Amount</p>
+                <p className="text-[13px] text-ink/50 mt-0.5 mb-3">Inclusive of all taxes</p>
+
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="font-display text-[46px] font-extrabold leading-none tracking-tight text-ink">{formatPrice(total)}</span>
                   {product.mrp > product.price && (
-                    <span className="mt-1.5 inline-block w-fit rounded-full border border-leaf-200 bg-leaf-50 px-2 py-0.5 text-[10px] font-bold text-leaf-700">
-                      You save {formatPrice(product.mrp - product.price)}
-                    </span>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="font-mono text-[15px] font-bold text-ink/30 line-through">{formatPrice(product.mrp + addOnsTotal)}</span>
+                      <span className="rounded-full bg-punch-50 px-2.5 py-1 text-[11px] font-bold text-punch-500">
+                        {discount}% OFF
+                      </span>
+                    </div>
                   )}
                 </div>
+
+                {product.mrp > product.price && (
+                  <div className="inline-flex items-center gap-1.5 rounded-full bg-leaf-50 px-3 py-1.5 text-[12px] font-bold text-leaf-600">
+                    <Tag size={14} className="text-leaf-600" />
+                    You save {formatPrice(product.mrp - product.price)} on this package
+                  </div>
+                )}
               </div>
 
-              {/* Action Buttons */}
-              <div className="grid grid-cols-2 gap-3">
+              {/* Vertical divider on desktop */}
+              <div className="hidden lg:block w-px h-32 bg-ink/5"></div>
+
+              {/* Right Column: Buttons */}
+              <div className="w-full flex-1 flex flex-col gap-3">
                 <WhatsAppCTA
                   variant="button"
-                  label="WhatsApp Us"
-                  className="w-full flex items-center justify-center gap-2 !rounded-xl !border-2 !border-ink/10 !bg-white !py-3.5 !text-[14px] !font-bold !text-ink hover:!border-ink/20 hover:!bg-paper transition-all sm:!text-base shadow-sm"
                   productName={product.name}
                   city={city}
                   date={eventDate}
                   time={eventTime}
                   customization={customizationSummary}
+                  className="[&>svg:first-child]:hidden !w-full !justify-between !rounded-full !border !border-ink/5 !bg-white !p-2 !px-4 hover:!border-leaf-200 hover:!bg-leaf-50/50 transition-all shadow-[0_2px_10px_rgb(0,0,0,0.04)] group relative overflow-hidden"
+                  label={
+                    <div className="flex items-center justify-between w-full relative z-10">
+                      <div className="flex items-center gap-4">
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-leaf-50 text-leaf-600 group-hover:bg-leaf-100 transition-colors">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
+                          </svg>
+                        </div>
+                        <div className="text-left leading-tight py-1">
+                          <p className="text-[15px] font-bold text-ink">WhatsApp Us</p>
+                          <p className="text-[12px] font-medium text-ink/40 mt-0.5">Get free expert guidance</p>
+                        </div>
+                      </div>
+                      <ChevronRight size={18} className="text-grape-700 font-bold" />
+                    </div>
+                  }
                 />
+
                 <button
                   onClick={handleBookNow}
-                  className="flex items-center justify-center gap-2 rounded-xl bg-grape-600 py-3.5 text-[14px] font-bold text-white shadow-[0_8px_16px_-6px_rgba(106,76,156,0.4)] transition-all hover:-translate-y-0.5 hover:shadow-[0_12px_20px_-6px_rgba(106,76,156,0.5)] hover:bg-grape-700 active:translate-y-0 active:shadow-none sm:text-base"
+                  className="group flex w-full items-center justify-between rounded-full bg-gradient-to-r from-grape-700 to-grape-900 p-2 px-4 text-left shadow-[0_4px_14px_rgba(106,76,156,0.3)] transition-all hover:shadow-[0_6px_20px_rgba(106,76,156,0.4)] active:scale-[0.98] relative overflow-hidden"
                 >
-                  <span>Book Now</span>
-                  <ChevronRight size={16} strokeWidth={3} />
+                  {/* Button background curves */}
+                  <div className="absolute right-0 top-0 bottom-0 w-32 bg-white/5 rounded-full blur-xl translate-x-4"></div>
+                  <div className="absolute right-12 top-0 bottom-0 w-24 bg-white/10 rounded-full blur-2xl"></div>
+
+                  <div className="flex items-center gap-4 relative z-10">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/10 text-white">
+                      <CalendarDays size={24} strokeWidth={2.5} />
+                    </div>
+                    <div className="leading-tight py-1">
+                      <p className="text-[15px] font-bold text-white">Book Now</p>
+                      <p className="text-[12px] font-medium text-white/70 mt-0.5">Secure your celebration</p>
+                    </div>
+                  </div>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-grape-800 relative z-10">
+                    <ChevronRight size={18} strokeWidth={3} />
+                  </div>
                 </button>
               </div>
             </div>
 
             {/* Trust Footer */}
-            <div className="border-t border-ink/5 bg-paper/50 px-5 py-3">
-              <div className="flex flex-wrap items-center justify-center gap-3 text-[11px] font-bold text-ink/60 sm:gap-4">
-                <div className="flex items-center gap-1.5 rounded-full border border-ink/5 bg-white px-2.5 py-1 shadow-sm">
-                  <ShieldCheck size={14} className="text-leaf-500" strokeWidth={2.5} />
-                  <span>Secure Booking</span>
+            <div className="border-t border-ink/5 px-5 py-6 sm:px-6 relative z-10">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-4 text-left">
+                {/* <div className="flex items-center lg:items-start gap-3.5">
+                  <div className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-full bg-leaf-50 text-leaf-600">
+                    <ShieldCheck size={22} strokeWidth={2} />
+                  </div>
+                  <div className="leading-tight">
+                    <p className="text-[13px] font-bold text-ink">Secure Booking</p>
+                    <p className="text-[11px] font-medium text-ink/40 mt-1">100% safe payments</p>
+                  </div>
+                </div> */}
+                <div className="flex items-center lg:items-start gap-3">
+                  <div className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-full bg-punch-50 text-punch-500">
+                    <Heart size={22} strokeWidth={2} />
+                  </div>
+                  <div className="leading-tight">
+                    <p className="text-[13px] font-bold text-ink">Satisfaction Guarantee</p>
+                    <p className="text-[11px] font-medium text-ink/40 mt-1">We make it special, always</p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1.5 rounded-full border border-ink/5 bg-white px-2.5 py-1 shadow-sm">
-                  <Heart size={14} className="text-punch-500" strokeWidth={2.5} />
-                  <span>Satisfaction Guarantee</span>
+                <div className="flex items-center lg:items-start gap-3.5 lg:border-l lg:border-ink/5 lg:pl-5">
+                  <div className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-full bg-grape-50 text-grape-600">
+                    <Headphones size={22} strokeWidth={2} />
+                  </div>
+                  <div className="leading-tight">
+                    <p className="text-[13px] font-bold text-ink">Dedicated Support</p>
+                    <p className="text-[11px] font-medium text-ink/40 mt-1">Call • Chat • 9 AM – 9 PM</p>
+                  </div>
                 </div>
+                <div className="flex items-center lg:items-start gap-3.5 lg:border-l lg:border-ink/5 lg:pl-5">
+                  <div className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-full bg-marigold-50 text-marigold-500">
+                    <Zap size={22} strokeWidth={2} />
+                  </div>
+                  <div className="leading-tight">
+                    <p className="text-[13px] font-bold text-ink">Need it today?</p>
+                    <p className="text-[11px] font-medium text-ink/40 mt-1">WhatsApp us for availability</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom avatars row (Exact Match) */}
+            <div className="m-4 sm:mx-6 sm:mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 rounded-[20px] bg-[#F7F3FC] px-5 py-4 relative overflow-hidden z-10">
+
+              {/* Blobs in this strip */}
+              <div className="absolute right-1/4 top-0 w-32 h-32 bg-white rounded-full blur-2xl opacity-60"></div>
+              <div className="absolute right-0 bottom-0 w-40 h-40 bg-grape-100 rounded-full blur-3xl opacity-50 translate-x-1/4 translate-y-1/4"></div>
+
+              <div className="flex flex-wrap justify-between lg:flex-nowrap items-center gap-5 w-full relative z-10">
+
+                {/* 1. Avatars & Happy Customers */}
+                <div className="flex items-center gap-3">
+                  <div className="flex -space-x-2">
+                    <div className="h-[42px] w-[42px] rounded-full border-[2.5px] border-white bg-paper overflow-hidden shadow-sm">
+                      {product.images[0] && <Image src={product.images[0]} alt="Customer" width={42} height={42} className="h-full w-full object-cover" />}
+                    </div>
+                    <div className="h-[42px] w-[42px] rounded-full border-[2.5px] border-white bg-paper overflow-hidden shadow-sm">
+                      {product.images[1] && <Image src={product.images[1]} alt="Customer" width={42} height={42} className="h-full w-full object-cover" />}
+                    </div>
+                    <div className="h-[42px] w-[42px] rounded-full border-[2.5px] border-white bg-paper overflow-hidden shadow-sm">
+                      {product.images[2] && <Image src={product.images[2]} alt="Customer" width={42} height={42} className="h-full w-full object-cover" />}
+                    </div>
+                    <div className="flex h-[42px] w-[42px] items-center justify-center rounded-full border-[2.5px] border-white bg-grape-700 text-[11px] font-bold text-white shadow-sm">
+                      10K+
+                    </div>
+                  </div>
+                  <div className="leading-tight pl-2">
+                    <p className="text-[13px] font-medium text-grape-500">Happy</p>
+                    <p className="text-[13px] font-medium text-grape-500">Customers</p>
+                  </div>
+                </div>
+
+                {/* <div className="hidden sm:block h-10 w-px bg-grape-200"></div> */}
+
+                {/* 2. Script text */}
+                {/* <div className="flex-1 min-w-[200px]">
+                  <p className="text-[18px] text-grape-700" style={{ fontFamily: "cursive" }}>Celebrations Made Happier</p>
+                  <p className="text-[12px] font-medium text-grape-500 mt-0.5">Trusted by thousands of families across India</p>
+                </div> */}
+
+                {/* 3. Small leaf design & your moments */}
+                <div className="hidden lg:flex items-center gap-4">
+                  <div className="text-grape-400">
+                    <svg width="32" height="20" viewBox="0 0 40 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 2C12 2 15 6 15 11C15 16 12 22 12 22C12 22 9 16 9 11C9 6 12 2 12 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M12 22C12 22 16 18 19 18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      <circle cx="28" cy="16" r="1.5" fill="currentColor" />
+                      <circle cx="34" cy="16" r="1.5" fill="currentColor" />
+                    </svg>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[9px] font-bold tracking-[0.15em] text-grape-400 uppercase leading-relaxed">Your Moments,</p>
+                    <p className="text-[9px] font-bold tracking-[0.15em] text-grape-400 uppercase leading-relaxed">Our Commitment</p>
+                    <div className="w-6 h-px bg-grape-400 mt-1 ml-auto"></div>
+                  </div>
+                </div>
+
               </div>
             </div>
           </div>
