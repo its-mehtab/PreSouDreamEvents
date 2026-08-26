@@ -96,37 +96,8 @@ export default function ProductCard({ product, className }: { product: Product; 
           )}
         </div>
 
-        <p
-          className={cn(
-            "flex items-center gap-1 text-[11px] font-medium",
-            cityAvailability?.status === "available" && "text-leaf-600",
-            cityAvailability?.status === "limited" && "text-marigold-600",
-            cityAvailability?.status === "unavailable" && "text-ink/40"
-          )}
-        >
-          <MapPin size={11} />
-          {cityAvailability?.status === "available" && "Available in " + city}
-          {cityAvailability?.status === "limited" && "Limited slots in " + city}
-          {cityAvailability?.status === "unavailable" && "Check other cities"}
-        </p>
 
-        <div className="mt-auto grid grid-cols-2 gap-2 pt-2">
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              addItem({ productId: product.id, city });
-            }}
-            className="rounded-full border border-ink/15 px-2 py-1.5 text-xs font-semibold text-ink hover:border-grape-500 hover:text-grape-700"
-          >
-            Add to Cart
-          </button>
-          <Link
-            href={`/product/${product.slug}`}
-            className="rounded-full bg-grape-600 px-2 py-1.5 text-center text-xs font-semibold text-white hover:bg-grape-700"
-          >
-            Book Now
-          </Link>
-        </div>
+
       </div>
     </motion.div>
   );

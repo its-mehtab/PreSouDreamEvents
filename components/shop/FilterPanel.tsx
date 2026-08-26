@@ -17,8 +17,8 @@ const DECORATION_TYPES = [
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="border-b border-ink/8 py-4 first:pt-0">
-      <p className="mb-3 text-sm font-semibold text-ink">{title}</p>
+    <div className="mb-6 last:mb-0">
+      <p className="mb-2.5 text-[13px] font-bold text-ink uppercase tracking-wide">{title}</p>
       {children}
     </div>
   );
@@ -39,20 +39,20 @@ export default function FilterPanel({
 }) {
   const resultCountBadge = (active: boolean) =>
     cn(
-      "flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm cursor-pointer transition-colors",
-      active ? "bg-grape-50 text-grape-700 font-medium" : "text-ink/70 hover:bg-paper"
+      "flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs cursor-pointer transition-colors whitespace-nowrap",
+      active ? "border-grape-600 bg-grape-50 text-grape-700 font-medium" : "border-ink/10 text-ink/70 hover:bg-paper"
     );
 
   return (
-    <div className="text-sm">
+    <div className="text-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-0">
       {!hideOccasion && (
         <Section title="Occasion">
-          <div className="space-y-1">
+          <div className="flex flex-wrap gap-1.5">
             {OCCASIONS.map((o) => (
               <label key={o} className={resultCountBadge(filters.occasions.includes(o))}>
                 <input
                   type="checkbox"
-                  className="accent-grape-600"
+                  className="hidden"
                   checked={filters.occasions.includes(o)}
                   onChange={() => onChange({ ...filters, occasions: toggleInArray(filters.occasions, o) })}
                 />
@@ -64,12 +64,12 @@ export default function FilterPanel({
       )}
 
       <Section title="Decoration Type">
-        <div className="space-y-1">
+        <div className="flex flex-wrap gap-1.5">
           {DECORATION_TYPES.map((d) => (
             <label key={d} className={resultCountBadge(filters.decorationTypes.includes(d))}>
               <input
                 type="checkbox"
-                className="accent-grape-600"
+                className="hidden"
                 checked={filters.decorationTypes.includes(d)}
                 onChange={() =>
                   onChange({ ...filters, decorationTypes: toggleInArray(filters.decorationTypes, d) })
@@ -149,29 +149,29 @@ export default function FilterPanel({
       </Section>
 
       <Section title="More filters">
-        <div className="space-y-2">
-          <label className="flex items-center gap-2 text-ink/70">
+        <div className="flex flex-wrap gap-1.5">
+          <label className={resultCountBadge(filters.customizableOnly)}>
             <input
               type="checkbox"
-              className="accent-grape-600"
+              className="hidden"
               checked={filters.customizableOnly}
               onChange={(e) => onChange({ ...filters, customizableOnly: e.target.checked })}
             />
             Customizable
           </label>
-          <label className="flex items-center gap-2 text-ink/70">
+          <label className={resultCountBadge(filters.premiumOnly)}>
             <input
               type="checkbox"
-              className="accent-grape-600"
+              className="hidden"
               checked={filters.premiumOnly}
               onChange={(e) => onChange({ ...filters, premiumOnly: e.target.checked })}
             />
             Premium
           </label>
-          <label className="flex items-center gap-2 text-ink/70">
+          <label className={resultCountBadge(filters.trendingOnly)}>
             <input
               type="checkbox"
-              className="accent-grape-600"
+              className="hidden"
               checked={filters.trendingOnly}
               onChange={(e) => onChange({ ...filters, trendingOnly: e.target.checked })}
             />

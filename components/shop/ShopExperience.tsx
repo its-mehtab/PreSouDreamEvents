@@ -23,6 +23,7 @@ export default function ShopExperience({
   hideOccasion = false,
   initialFilters,
   initialSort = "recommended",
+  hideHeader = false,
 }: {
   title: string;
   description?: string;
@@ -31,6 +32,7 @@ export default function ShopExperience({
   hideOccasion?: boolean;
   initialFilters?: Partial<FilterState>;
   initialSort?: SortOption;
+  hideHeader?: boolean;
 }) {
   const cleanInitial = initialFilters
     ? (Object.fromEntries(Object.entries(initialFilters).filter(([, v]) => v !== undefined)) as Partial<FilterState>)
@@ -53,31 +55,38 @@ export default function ShopExperience({
 
   return (
     <div className="container-app py-5">
-      <nav className="mb-3 flex items-center gap-1 text-xs text-ink/45">
-        {breadcrumbs.map((b, i) => (
-          <span key={i} className="flex items-center gap-1">
-            {b.href ? (
-              <Link href={b.href} className="hover:text-grape-700">
-                {b.label}
-              </Link>
-            ) : (
-              <span className="text-ink/70">{b.label}</span>
-            )}
-            {i < breadcrumbs.length - 1 && <ChevronRight size={12} />}
-          </span>
-        ))}
-      </nav>
+      {!hideHeader && (
+        <>
+          <nav className="mb-3 flex items-center gap-1 text-xs text-ink/45">
+            {breadcrumbs.map((b, i) => (
+              <span key={i} className="flex items-center gap-1">
+                {b.href ? (
+                  <Link href={b.href} className="hover:text-grape-700">
+                    {b.label}
+                  </Link>
+                ) : (
+                  <span className="text-ink/70">{b.label}</span>
+                )}
+                {i < breadcrumbs.length - 1 && <ChevronRight size={12} />}
+              </span>
+            ))}
+          </nav>
 
-      <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="font-display text-2xl font-bold text-ink sm:text-3xl">{title}</h1>
-          {description && <p className="mt-1 max-w-xl text-sm text-ink/55">{description}</p>}
-          <p className="mt-1 text-sm text-ink/45">{filtered.length} products</p>
-        </div>
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h1 className="font-display text-2xl font-bold text-ink sm:text-3xl">{title}</h1>
+              {description && <p className="mt-1 max-w-xl text-sm text-ink/55">{description}</p>}
+            </div>
+          </div>
+        </>
+      )}
+
+      <div className={`mb-5 flex flex-wrap items-end justify-between gap-3 ${hideHeader ? 'mt-4' : ''}`}>
+        <p className="mt-1 text-sm text-ink/45">{filtered.length} products</p>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setDrawerOpen(true)}
-            className="btn-secondary !px-3.5 !py-2 text-xs sm:text-sm lg:hidden"
+            className="btn-secondary !px-3.5 !py-2 text-xs sm:text-sm"
           >
             <SlidersHorizontal size={14} />
             Filters {activeFilterCount > 0 && `(${activeFilterCount})`}
@@ -86,23 +95,7 @@ export default function ShopExperience({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[240px_1fr]">
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto rounded-2xl border border-ink/8 bg-white p-4">
-            <div className="mb-2 flex items-center justify-between">
-              <p className="font-display text-base font-semibold">Filters</p>
-              {activeFilterCount > 0 && (
-                <button
-                  onClick={() => setFilters({ ...defaultFilters, ...cleanInitial })}
-                  className="text-xs font-semibold text-grape-700 hover:underline"
-                >
-                  Clear all
-                </button>
-              )}
-            </div>
-            <FilterPanel filters={filters} onChange={setFilters} hideOccasion={hideOccasion} />
-          </div>
-        </aside>
+      <div className="grid grid-cols-1 gap-8">
 
         <div>
           {filtered.length === 0 ? (

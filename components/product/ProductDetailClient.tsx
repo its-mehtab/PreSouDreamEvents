@@ -682,8 +682,8 @@ export default function ProductDetailClient({ product }: { product: Product }) {
             </div>
           )}
 
-          {/* ── Checkout Summary (Sticky Bottom Bar) ── */}
-          <div className="sticky bottom-4 z-40 mt-8 overflow-hidden rounded-[24px] bg-white shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all lg:relative lg:bottom-auto lg:z-auto border border-ink/5">
+          {/* 🛒 Checkout Summary (No longer sticky on mobile) 🛒 */}
+          <div className="relative mt-8 overflow-hidden rounded-[24px] bg-white shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-ink/5">
             {/* Background Blob decoration */}
             <div className="absolute right-0 top-0 -z-10 w-64 h-64 bg-grape-50/60 rounded-full blur-3xl translate-x-1/2 -translate-y-1/4"></div>
 

@@ -28,7 +28,7 @@ export default function FilterDrawer({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[70] bg-ink/40 lg:hidden"
+            className="fixed inset-0 z-[70] bg-ink/40"
             onClick={onClose}
           />
           <motion.aside
@@ -36,7 +36,7 @@ export default function FilterDrawer({
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 32, stiffness: 320 }}
-            className="fixed inset-x-0 bottom-0 z-[80] flex max-h-[85vh] flex-col rounded-t-3xl bg-white lg:hidden"
+            className="fixed inset-x-0 bottom-0 z-[80] flex max-h-[85vh] flex-col rounded-t-3xl bg-white lg:bottom-auto lg:top-[10vh] lg:mx-auto lg:w-[90vw] lg:max-w-4xl lg:rounded-3xl lg:border lg:border-ink/10 lg:shadow-2xl shadow-[0_-10px_40px_rgba(0,0,0,0.1)]"
           >
             <div className="flex items-center justify-between border-b border-ink/10 px-5 py-4">
               <h2 className="font-display text-lg font-semibold">Filters</h2>
