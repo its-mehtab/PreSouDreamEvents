@@ -71,7 +71,8 @@ export default function ProductDetailClient({ product }: { product: Product }) {
 
   const [activeImage, setActiveImage] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [eventDate, setEventDate] = useState(todayISO());
+  const [isMounted, setIsMounted] = useState(false);
+  const [eventDate, setEventDate] = useState("");
   const [eventTime, setEventTime] = useState(TIME_SLOTS[0]);
   const [showCalendar, setShowCalendar] = useState(false);
   const [customizations, setCustomizations] = useState<Record<string, string>>(() => {
@@ -123,7 +124,12 @@ export default function ProductDetailClient({ product }: { product: Product }) {
     if (el) { el.style.cursor = "grab"; el.style.userSelect = ""; }
   }
 
-  const DATE_STRIP = useMemo(() => getDateStrip(), []);
+  const DATE_STRIP = useMemo(() => isMounted ? getDateStrip() : [], [isMounted]);
+
+  useEffect(() => {
+    setEventDate(todayISO());
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => { recordView(product.id); }, [product.id]);
 
@@ -162,10 +168,10 @@ export default function ProductDetailClient({ product }: { product: Product }) {
       </nav>
 
       {/* ── 2-column main layout ── */}
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
 
         {/* ════ LEFT: sticky gallery ════ */}
-        <div className="lg:sticky lg:top-24 lg:self-start">
+        <div className="lg:sticky lg:top-24 lg:self-start lg:col-span-5">
           {/* Main image */}
           <button
             onClick={() => setLightboxOpen(true)}
@@ -177,7 +183,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
               alt={product.name}
               fill
               className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-              sizes="(max-width:1024px) 100vw, 48vw"
+              sizes="(max-width:1024px) 100vw, 42vw"
               priority
             />
             {/* Discount badge */}
@@ -227,7 +233,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
         </div>
 
         {/* ════ RIGHT: product info + booking ════ */}
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-5 lg:col-span-7">
 
           {/* ── Title block ── */}
           <div>
@@ -310,12 +316,14 @@ export default function ProductDetailClient({ product }: { product: Product }) {
           </div>
 
           {/* ── What's included ── */}
-          <div className="rounded-2xl border border-ink/8 p-4">
-            <p className="mb-3 text-sm font-semibold text-ink">What&apos;s included</p>
-            <ul className="grid grid-cols-1 gap-y-2 sm:grid-cols-2">
+          <div className="rounded-2xl border border-ink/8 p-5 bg-white shadow-sm">
+            <p className="mb-4 text-sm font-semibold text-ink">What&apos;s included</p>
+            <ul className="grid grid-cols-1 gap-y-3.5 sm:grid-cols-2 gap-x-6">
               {product.whatsIncluded.map((w) => (
-                <li key={w} className="flex items-start gap-2 text-sm text-ink/65">
-                  <Check size={14} className="mt-0.5 shrink-0 text-leaf-500" />
+                <li key={w} className="flex items-start gap-3 text-[13px] text-ink/70 leading-relaxed">
+                  <div className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-leaf-50 text-leaf-500">
+                    <Check size={10} strokeWidth={3} />
+                  </div>
                   {w}
                 </li>
               ))}
@@ -324,15 +332,15 @@ export default function ProductDetailClient({ product }: { product: Product }) {
 
           {/* ── Customizations ── */}
           {product.customizations.length > 0 && (
-            <div className="rounded-2xl border border-ink/8 p-4">
-              <p className="mb-3 text-sm font-semibold text-ink">Customize</p>
-              <div className="space-y-4">
+            <div className="rounded-2xl border border-ink/8 p-4 bg-paper/30">
+              <p className="mb-4 text-sm font-semibold text-ink">Customize Your Setup</p>
+              <div className="space-y-5">
                 {product.customizations.map((c) => (
                   <div key={c.id}>
-                    <label className="mb-2 block text-xs font-semibold text-ink/50">{c.label}</label>
+                    <label className="mb-2.5 block text-xs font-bold uppercase tracking-wider text-ink/40">{c.label}</label>
                     {c.type === "color" && c.choices && (
                       <div className="flex flex-col gap-2">
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap gap-2.5">
                           {c.choices.map((choice) => {
                             const isActive = customizations[c.id] === choice;
                             return (
@@ -341,53 +349,54 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                                 key={choice}
                                 onClick={() => setCustomizations((s) => ({ ...s, [c.id]: choice }))}
                                 className={cn(
-                                  "relative flex items-center gap-1.5 rounded-xl border px-3 py-2 text-sm font-semibold transition-all duration-200 hover:shadow-sm hover:-translate-y-0.5 active:translate-y-0",
+                                  "relative flex flex-col items-center justify-center gap-2 rounded-[14px] border p-2.5 transition-all duration-200 hover:-translate-y-0.5 w-[76px] h-[86px]",
                                   isActive
-                                    ? "border-[#6A4C9C] bg-[#6A4C9C]/5 text-ink ring-1 ring-[#6A4C9C]/20 shadow-sm"
-                                    : "border-ink/15 bg-white text-ink hover:border-[#6A4C9C]/40 hover:bg-[#6A4C9C]/[0.02]"
+                                    ? "border-grape-600 bg-grape-50 shadow-sm ring-1 ring-grape-600/20"
+                                    : "border-ink/10 bg-white hover:border-grape-400 hover:shadow-sm"
                                 )}
                               >
                                 <div className="flex -space-x-1.5 pt-0.5">
                                   {getBalloonColors(choice).map((color, i) => (
-                                    <BalloonIcon key={i} color={color} />
+                                    <BalloonIcon key={i} color={color} size={22} />
                                   ))}
                                 </div>
-                                {choice}
+                                <span className={cn("text-[10px] font-bold leading-tight text-center", isActive ? "text-grape-600" : "text-ink/60")}>{choice}</span>
                                 {isActive && (
-                                  <CheckCircle2 size={18} className="absolute -right-2 -top-2 text-white fill-[#6A4C9C] drop-shadow-sm" />
+                                  <CheckCircle2 size={16} className="absolute -right-2 -top-2 text-white fill-grape-600 drop-shadow-sm" />
                                 )}
                               </button>
                             );
                           })}
 
-                          {/* Custom Button */}
                           <button
                             type="button"
                             data-custom-picker-toggle
                             onClick={() => setShowColorPickerFor(showColorPickerFor === c.id ? null : c.id)}
                             className={cn(
-                              "relative flex items-center gap-1.5 rounded-xl border px-3 py-2 text-sm font-semibold transition-all duration-200 hover:shadow-sm hover:-translate-y-0.5 active:translate-y-0",
+                              "relative flex flex-col items-center justify-center gap-2 rounded-[14px] border p-2.5 transition-all duration-200 hover:-translate-y-0.5 min-w-[76px] h-[86px] px-3",
                               customizations[c.id]?.startsWith("Custom: ")
-                                ? "border-[#6A4C9C] bg-[#6A4C9C]/5 text-ink ring-1 ring-[#6A4C9C]/20 shadow-sm"
-                                : "border-dashed border-ink/20 bg-white text-ink hover:border-[#6A4C9C]/40 hover:bg-[#6A4C9C]/[0.02]"
+                                ? "border-grape-600 bg-grape-50 shadow-sm ring-1 ring-grape-600/20"
+                                : "border-dashed border-ink/20 bg-white hover:border-grape-400 hover:bg-grape-50"
                             )}
                           >
                             {customizations[c.id]?.startsWith("Custom: ") ? (
                               <div className="flex -space-x-1.5 pt-0.5">
                                 {getBalloonColors(customizations[c.id]).map((color, i) => (
-                                  <BalloonIcon key={i} color={color} />
+                                  <BalloonIcon key={i} color={color} size={22} />
                                 ))}
                               </div>
                             ) : (
                               <div className="flex -space-x-1.5 pt-0.5">
-                                <BalloonIcon color="#ec4899" />
-                                <BalloonIcon color="#3b82f6" />
-                                <BalloonIcon color="#eab308" />
+                                <BalloonIcon color="#ec4899" size={22} />
+                                <BalloonIcon color="#3b82f6" size={22} />
+                                <BalloonIcon color="#eab308" size={22} />
                               </div>
                             )}
-                            {customizations[c.id]?.startsWith("Custom: ") ? customizations[c.id].replace("Custom: ", "") : "+ Custom"}
+                            <span className={cn("text-[10px] font-bold leading-tight text-center", customizations[c.id]?.startsWith("Custom: ") ? "text-grape-600" : "text-ink/60")}>
+                              {customizations[c.id]?.startsWith("Custom: ") ? "Custom" : "Pick Your Mix"}
+                            </span>
                             {customizations[c.id]?.startsWith("Custom: ") && (
-                              <CheckCircle2 size={18} className="absolute -right-2 -top-2 text-white fill-[#6A4C9C] drop-shadow-sm" />
+                              <CheckCircle2 size={16} className="absolute -right-2 -top-2 text-white fill-grape-600 drop-shadow-sm" />
                             )}
                           </button>
                         </div>
@@ -423,7 +432,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                         value={customizations[c.id] ?? ""}
                         onChange={(e) => setCustomizations((s) => ({ ...s, [c.id]: e.target.value }))}
                         placeholder={`e.g. "Happy 25th Ananya!"`}
-                        className="input-field"
+                        className="w-full rounded-xl border border-transparent bg-ink/5 px-4 py-3.5 text-[13px] font-medium text-ink placeholder:text-ink/40 transition-all focus:border-grape-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-grape-600/10"
                       />
                     )}
                   </div>
@@ -433,46 +442,53 @@ export default function ProductDetailClient({ product }: { product: Product }) {
           )}
 
           {/* ── Date & Time Section ── */}
-          <div className="relative rounded-2xl border border-ink/8 p-4 bg-paper/30">
-            <p className="mb-0.5 text-sm font-semibold text-ink">
-              Choose Date & Time
-            </p>
-            <p className="mb-4 text-xs text-ink/50">When should we arrive to set up?</p>
+          <div className="relative rounded-2xl border border-ink/8 p-5 bg-white shadow-sm">
+            <p className="mb-0.5 text-sm font-semibold text-ink">Choose Date & Time</p>
+            <p className="mb-4 text-[13px] text-ink/50">When should we arrive to set up?</p>
 
-            <p className="mb-0 text-xs font-semibold text-ink/40 tracking-wider">SELECT DATE</p>
-            <div className="flex gap-2 overflow-x-auto scrollbar-none pt-3 pb-3">
-              {DATE_STRIP.map((d) => (
-                <button
-                  key={d.iso}
-                  onClick={() => setEventDate(d.iso)}
-                  className={cn(
-                    "relative flex h-24 w-[72px] shrink-0 flex-col items-center justify-center rounded-2xl border transition-all duration-150",
-                    eventDate === d.iso
-                      ? "border-grape-600 bg-grape-600 text-white shadow-md"
-                      : "border-ink/15 bg-white text-ink/70 hover:border-grape-300 hover:text-grape-700"
-                  )}
-                >
-                  {d.isFast && (
-                    <span className={cn(
-                      "absolute -top-2 flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[8px] font-bold tracking-wider shadow-sm",
-                      eventDate === d.iso ? "bg-white text-punch-600" : "bg-punch-500 text-white"
-                    )}>
-                      <Zap size={8} className={eventDate === d.iso ? "text-punch-600 fill-punch-600" : "text-white fill-white"} /> FAST
-                    </span>
-                  )}
-                  <span className="text-[10px] font-semibold uppercase tracking-wide opacity-80">{d.dayLabel}</span>
-                  <span className="text-[22px] font-bold leading-tight my-0.5">{d.dateNum}</span>
-                  <span className="text-[10px] font-medium opacity-80">{d.monthLabel}</span>
-                </button>
-              ))}
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-ink/40">Select Date</p>
+            <div className="flex gap-2.5 overflow-x-auto scrollbar-none pb-2 pt-4 -mt-2 -mx-2 px-2 snap-x snap-mandatory">
+              {!isMounted ? (
+                Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="h-[92px] w-[72px] shrink-0 rounded-[14px] border border-ink/5 bg-paper/50 animate-pulse snap-start" />
+                ))
+              ) : (
+                <>
+                  {DATE_STRIP.map((d) => (
+                    <button
+                      key={d.iso}
+                      onClick={() => setEventDate(d.iso)}
+                      className={cn(
+                        "group relative flex h-[92px] w-[72px] shrink-0 snap-start flex-col items-center justify-center rounded-[14px] border transition-all duration-200",
+                        eventDate === d.iso
+                          ? "border-grape-600 bg-grape-600 text-white shadow-md ring-2 ring-grape-600/20 ring-offset-1"
+                          : "border-ink/10 bg-white text-ink hover:-translate-y-0.5 hover:border-grape-400 hover:shadow-sm"
+                      )}
+                    >
+                      {d.isFast && (
+                        <span className={cn(
+                          "absolute -top-2.5 flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[8.5px] font-extrabold tracking-widest shadow-sm",
+                          eventDate === d.iso ? "bg-white text-punch-600" : "bg-gradient-to-r from-punch-500 to-punch-600 text-white"
+                        )}>
+                          <Zap size={9} className={eventDate === d.iso ? "text-punch-500 fill-punch-500" : "text-white fill-white"} />
+                          FAST
+                        </span>
+                      )}
+                      <span className={cn("text-[9px] font-bold uppercase tracking-wider", eventDate === d.iso ? "opacity-90" : "text-ink/40")}>{d.dayLabel}</span>
+                      <span className={cn("text-[26px] font-extrabold leading-none my-1", eventDate === d.iso ? "text-white" : "text-ink/90")}>{d.dateNum}</span>
+                      <span className={cn("text-[9px] font-bold uppercase tracking-wider", eventDate === d.iso ? "opacity-90" : "text-ink/40")}>{d.monthLabel}</span>
+                    </button>
+                  ))}
 
-              <button
-                onClick={() => setShowCalendar((s) => !s)}
-                className="flex h-24 w-[72px] shrink-0 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-ink/20 bg-transparent text-ink/50 hover:border-grape-300 hover:text-grape-600 transition-colors duration-150"
-              >
-                <CalendarDays size={18} className="mb-1.5 opacity-70" />
-                <span className="text-[9px] font-semibold uppercase tracking-wide">MORE<br />dates</span>
-              </button>
+                  <button
+                    onClick={() => setShowCalendar((s) => !s)}
+                    className="flex h-[92px] w-[72px] shrink-0 snap-start flex-col items-center justify-center rounded-[14px] border-2 border-dashed border-ink/15 bg-paper/30 text-ink/50 transition-all duration-200 hover:border-grape-400 hover:bg-grape-50 hover:text-grape-700"
+                  >
+                    <CalendarDays size={20} className="mb-1.5 opacity-70" />
+                    <span className="text-[9px] font-bold uppercase tracking-widest">More<br />Dates</span>
+                  </button>
+                </>
+              )}
             </div>
 
             <div
@@ -493,21 +509,21 @@ export default function ProductDetailClient({ product }: { product: Product }) {
               />
             </div>
 
-            <div className="mt-4 mb-2 flex items-center justify-between">
-              <p className="text-xs font-semibold text-ink/40 tracking-wider">SELECT TIME</p>
-              <p className="flex items-center gap-1 text-[11px] text-ink/50"><Clock size={11} /> 2-hr window</p>
+            <div className="mt-5 mb-3 flex items-center justify-between">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-ink/40">Select Time</p>
+              <p className="flex items-center gap-1.5 text-[11px] font-semibold text-leaf-700 bg-leaf-50 px-2 py-0.5 rounded-full border border-leaf-100"><Clock size={11} strokeWidth={2.5} /> 2-hr window</p>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
               {TIME_SLOTS.map((t) => (
                 <button
                   key={t}
                   onClick={() => setEventTime(t)}
                   className={cn(
-                    "rounded-[10px] border py-2.5 text-xs font-semibold transition-all duration-150",
+                    "rounded-[12px] border py-2.5 text-[12px] font-bold transition-all duration-150",
                     eventTime === t
-                      ? "border-grape-600 bg-grape-600 text-white shadow-sm"
-                      : "border-ink/15 bg-white text-ink/70 hover:border-grape-300 hover:text-grape-700"
+                      ? "border-grape-600 bg-grape-50 text-grape-700 ring-1 ring-grape-600/30 shadow-sm"
+                      : "border-ink/10 bg-white text-ink/70 hover:border-grape-400 hover:shadow-sm hover:text-grape-700"
                   )}
                 >
                   {t}
@@ -515,12 +531,14 @@ export default function ProductDetailClient({ product }: { product: Product }) {
               ))}
             </div>
 
-            <p className="mt-5 flex items-center gap-1.5 text-[11px] text-ink/55">
-              <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-leaf-500 text-leaf-500">
-                <Check size={9} strokeWidth={3} />
-              </span>
-              <span>Our team <strong className="font-semibold text-ink/80">arrives & completes the setup</strong> within your selected time slot.</span>
-            </p>
+            <div className="mt-5 rounded-xl bg-leaf-50/50 p-3 border border-leaf-100/50">
+              <p className="flex items-center gap-2.5 text-[11px] font-medium text-leaf-800">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-leaf-100 text-leaf-600">
+                  <Check size={12} strokeWidth={3} />
+                </span>
+                <span>Our team <strong className="font-bold">arrives & completes setup</strong> within this window.</span>
+              </p>
+            </div>
           </div>
 
           {/* ── Add-ons ── */}
@@ -555,98 +573,169 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                   </button>
                 </div>
               </div>
-              {/* Carousel track */}
-              <div
-                ref={addOnsScrollRef}
-                className="flex gap-2.5 overflow-x-auto scrollbar-none pb-1 cursor-grab active:cursor-grabbing px-2 py-2"
-                style={{ scrollBehavior: "auto" }}
-                onMouseDown={onAddOnsMouseDown}
-                onMouseMove={onAddOnsMouseMove}
-                onMouseUp={onAddOnsMouseUp}
-                onMouseLeave={onAddOnsMouseUp}
-              >
-                {product.addOns.map((a) => {
-                  const checked = selectedAddOns.includes(a.id);
-                  return (
-                    <button
-                      key={a.id}
-                      type="button"
-                      onClick={() => { if (addOnsDragMoved.current) return; setSelectedAddOns((s) => checked ? s.filter((id) => id !== a.id) : [...s, a.id]); }}
-                      className={cn(
-                        "group relative flex w-[120px] shrink-0 flex-col overflow-visible rounded-xl border text-left transition-all duration-200 transition-colors",
-                        checked
-                          ? "border-[#6A4C9C] bg-white shadow-sm ring-1 ring-[#6A4C9C]/30"
-                          : "border-ink/10 hover:border-[#6A4C9C]/40 hover:shadow-sm bg-white"
-                      )}
-                    >
-                      {/* Image */}
-                      <div className="relative h-[100px] w-full overflow-hidden bg-paper rounded-t-[11px]">
-                        {a.image ? (
-                          <Image
-                            src={a.image}
-                            alt={a.name}
-                            fill
-                            className="object-cover transition-transform duration-300 group-hover:scale-105"
-                            sizes="136px"
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center text-2xl">🎉</div>
+              {/* Carousel track container */}
+              <div className="relative -mx-2 px-2">
+                <div
+                  ref={addOnsScrollRef}
+                  className="flex gap-3 overflow-x-auto scrollbar-none pb-3 pt-2 cursor-grab active:cursor-grabbing px-1"
+                  style={{ scrollBehavior: "auto" }}
+                  onMouseDown={onAddOnsMouseDown}
+                  onMouseMove={onAddOnsMouseMove}
+                  onMouseUp={onAddOnsMouseUp}
+                  onMouseLeave={onAddOnsMouseUp}
+                >
+                  {product.addOns.map((a) => {
+                    const checked = selectedAddOns.includes(a.id);
+                    return (
+                      <div
+                        key={a.id}
+                        className={cn(
+                          "group relative flex w-[140px] shrink-0 flex-col overflow-hidden rounded-[16px] border bg-white transition-all duration-200",
+                          checked
+                            ? "border-grape-600 shadow-md ring-1 ring-grape-600"
+                            : "border-ink/10 hover:border-grape-400 hover:shadow-sm"
                         )}
-                      </div>
-                      {/* Check badge */}
-                      <span className={cn(
-                        "absolute -right-2 -top-2 z-10 transition-all duration-200",
-                        checked
-                          ? "opacity-100 scale-100"
-                          : "opacity-0 scale-75 group-hover:opacity-50 group-hover:scale-90"
-                      )}>
-                        <CheckCircle2 size={20} className="text-white fill-[#6A4C9C] drop-shadow-sm" />
-                      </span>
+                      >
+                        {/* Image */}
+                        <div
+                          className="relative h-[110px] w-full overflow-hidden bg-paper cursor-pointer"
+                          onClick={() => { if (!addOnsDragMoved.current) setSelectedAddOns((s) => checked ? s.filter((id) => id !== a.id) : [...s, a.id]); }}
+                        >
+                          {a.image ? (
+                            <Image
+                              src={a.image}
+                              alt={a.name}
+                              fill
+                              className={cn(
+                                "object-cover transition-transform duration-500",
+                                !checked && "group-hover:scale-105"
+                              )}
+                              sizes="140px"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center text-2xl">🎉</div>
+                          )}
 
-                      {/* Info */}
-                      <div className={cn(
-                        "flex flex-col px-2 py-1.5 transition-colors"
-                      )}>
-                        <p className="text-[11px] font-semibold leading-tight text-ink line-clamp-2">{a.name}</p>
-                        <p className={cn(
-                          "mt-0.5 font-mono text-[12px] font-bold",
-                          checked ? "text-grape-600" : "text-ink/45"
-                        )}>+{formatPrice(a.price)}</p>
+                          {/* Selected Overlay */}
+                          {checked && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-grape-900/20 backdrop-blur-[1px]">
+                              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-sm">
+                                <Check size={18} strokeWidth={3.5} className="text-grape-600" />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Info & Add Button */}
+                        <div className="flex flex-1 flex-col p-2.5">
+                          <p className="mb-2 line-clamp-2 text-[12px] font-bold leading-snug text-ink">{a.name}</p>
+
+                          <div className="mt-auto pt-1">
+                            <button
+                              type="button"
+                              onClick={() => { if (!addOnsDragMoved.current) setSelectedAddOns((s) => checked ? s.filter((id) => id !== a.id) : [...s, a.id]); }}
+                              className={cn(
+                                "flex w-full items-center justify-center gap-1.5 rounded-[10px] py-1.5 text-[11px] font-bold transition-all",
+                                checked
+                                  ? "bg-grape-50 text-grape-700"
+                                  : "bg-paper text-ink/70 hover:bg-grape-50 hover:text-grape-600"
+                              )}
+                            >
+                              {checked ? (
+                                <>
+                                  <Check size={12} strokeWidth={3} /> Added
+                                </>
+                              ) : (
+                                <>
+                                  <Plus size={12} strokeWidth={3} /> {formatPrice(a.price)}
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </div>
                       </div>
-                    </button>
-                  );
-                })}
+                    );
+                  })}
+                </div>
+                {/* Fade edges to hint at scroll */}
+                <div className="pointer-events-none absolute bottom-0 left-0 top-0 w-6 bg-gradient-to-r from-white to-transparent" />
+                <div className="pointer-events-none absolute bottom-0 right-0 top-0 w-8 bg-gradient-to-l from-white to-transparent" />
               </div>
             </div>
           )}
 
-          {/* ── Qty + Total + CTAs ── */}
-          {/* ── Total + CTAs ── */}
-          <div className="mt-8 rounded-2xl border border-ink/8 bg-white p-5 shadow-card">
-            <div className="mb-5 flex items-end justify-between">
-              <div>
-                <p className="text-sm font-bold text-ink">Total Amount</p>
-                <p className="text-xs font-medium text-ink/40">inclusive of taxes</p>
+          {/* ── Checkout Summary (Sticky Bottom Bar) ── */}
+          <div className="sticky bottom-4 z-40 mt-8 overflow-hidden rounded-2xl border border-ink/10 bg-white/95 backdrop-blur-md shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] transition-all lg:static lg:bottom-auto lg:z-auto lg:shadow-card lg:bg-white">
+            <div className="p-5">
+              {/* Add-ons Breakdown (only show if selected) */}
+              {selectedAddOns.length > 0 && (
+                <div className="mb-4 space-y-2 border-b border-dashed border-ink/10 pb-4 text-sm text-ink/70">
+                  <div className="flex justify-between">
+                    <span>Base Package</span>
+                    <span className="font-mono">{formatPrice(product.price)}</span>
+                  </div>
+                  <div className="flex justify-between text-grape-600 font-medium">
+                    <span>Add-ons ({selectedAddOns.length})</span>
+                    <span className="font-mono">+{formatPrice(addOnsTotal)}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Price Row */}
+              <div className="mb-5 flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
+                <div>
+                  <p className="text-sm font-bold text-ink">Total Amount</p>
+                  <p className="text-[11px] font-medium text-ink/40">inclusive of all taxes</p>
+                </div>
+                <div className="flex flex-col sm:items-end">
+                  <div className="flex items-center gap-2">
+                    {product.mrp > product.price && (
+                      <span className="font-mono text-sm text-ink/40 line-through">{formatPrice(product.mrp + addOnsTotal)}</span>
+                    )}
+                    <p className="font-mono text-[32px] font-extrabold leading-none tracking-tight text-ink">{formatPrice(total)}</p>
+                  </div>
+                  {product.mrp > product.price && (
+                    <span className="mt-1.5 inline-block w-fit rounded-full border border-leaf-200 bg-leaf-50 px-2 py-0.5 text-[10px] font-bold text-leaf-700">
+                      You save {formatPrice(product.mrp - product.price)}
+                    </span>
+                  )}
+                </div>
               </div>
-              <div className="text-right">
-                <p className="font-mono text-3xl font-bold text-ink tracking-tight">{formatPrice(total)}</p>
+
+              {/* Action Buttons */}
+              <div className="grid grid-cols-2 gap-3">
+                <WhatsAppCTA
+                  variant="button"
+                  label="WhatsApp Us"
+                  className="w-full flex items-center justify-center gap-2 !rounded-xl !border-2 !border-ink/10 !bg-white !py-3.5 !text-[14px] !font-bold !text-ink hover:!border-ink/20 hover:!bg-paper transition-all sm:!text-base shadow-sm"
+                  productName={product.name}
+                  city={city}
+                  date={eventDate}
+                  time={eventTime}
+                  customization={customizationSummary}
+                />
+                <button
+                  onClick={handleBookNow}
+                  className="flex items-center justify-center gap-2 rounded-xl bg-grape-600 py-3.5 text-[14px] font-bold text-white shadow-[0_8px_16px_-6px_rgba(106,76,156,0.4)] transition-all hover:-translate-y-0.5 hover:shadow-[0_12px_20px_-6px_rgba(106,76,156,0.5)] hover:bg-grape-700 active:translate-y-0 active:shadow-none sm:text-base"
+                >
+                  <span>Book Now</span>
+                  <ChevronRight size={16} strokeWidth={3} />
+                </button>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <WhatsAppCTA
-                variant="button"
-                label="WhatsApp"
-                className="w-full !rounded-xl !py-3.5 !text-base !border-[#25D366] !text-[#25D366] hover:!bg-[#25D366]/5"
-                productName={product.name}
-                city={city}
-                date={eventDate}
-                time={eventTime}
-                customization={customizationSummary}
-              />
-              <button onClick={handleBookNow} className="btn-primary rounded-xl py-3.5 text-base shadow-lg shadow-grape-600/20">
-                Book Now
-              </button>
+            {/* Trust Footer */}
+            <div className="border-t border-ink/5 bg-paper/50 px-5 py-3">
+              <div className="flex flex-wrap items-center justify-center gap-3 text-[11px] font-bold text-ink/60 sm:gap-4">
+                <div className="flex items-center gap-1.5 rounded-full border border-ink/5 bg-white px-2.5 py-1 shadow-sm">
+                  <ShieldCheck size={14} className="text-leaf-500" strokeWidth={2.5} />
+                  <span>Secure Booking</span>
+                </div>
+                <div className="flex items-center gap-1.5 rounded-full border border-ink/5 bg-white px-2.5 py-1 shadow-sm">
+                  <Heart size={14} className="text-punch-500" strokeWidth={2.5} />
+                  <span>Satisfaction Guarantee</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -719,13 +808,13 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                   const count = product.reviews.filter((r) => Math.round(r.rating) === star).length;
                   const pct = product.reviews.length > 0 ? (count / product.reviews.length) * 100 : 0;
                   return (
-                    <div key={star} className="flex items-center gap-2 text-xs text-ink/50">
+                    <div key={star} className="flex items-center gap-2 text-[11px] font-bold text-ink/60">
                       <span className="w-3 text-right">{star}</span>
                       <Star size={10} className="fill-marigold-400 text-marigold-400 shrink-0" />
-                      <div className="flex-1 rounded-full bg-ink/8 h-1.5 overflow-hidden">
-                        <div className="h-full rounded-full bg-marigold-400" style={{ width: `${pct}%` }} />
+                      <div className="flex-1 rounded-full bg-ink/5 h-2 overflow-hidden shadow-inner">
+                        <div className="h-full rounded-full bg-marigold-400 transition-all duration-500 ease-out" style={{ width: `${pct}%` }} />
                       </div>
-                      <span className="w-4">{count}</span>
+                      <span className="w-4 font-semibold text-ink/40">{count}</span>
                     </div>
                   );
                 })}
@@ -733,26 +822,26 @@ export default function ProductDetailClient({ product }: { product: Product }) {
             </div>
 
             {/* Review cards */}
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {product.reviews.map((r) => (
-                <div key={r.id} className="rounded-2xl border border-ink/8 p-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2.5">
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-grape-100 text-sm font-bold text-grape-700">
+                <div key={r.id} className="rounded-2xl border border-ink/8 p-5 bg-white shadow-sm">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-grape-100 text-[15px] font-bold text-grape-700">
                         {r.author.charAt(0)}
                       </span>
                       <div>
-                        <p className="text-sm font-semibold text-ink">{r.author}</p>
-                        <p className="text-xs text-ink/40">
+                        <p className="text-sm font-bold text-ink">{r.author}</p>
+                        <p className="text-[11px] font-medium text-ink/40 mt-0.5">
                           {r.city} · {new Date(r.date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                         </p>
                       </div>
                     </div>
-                    <span className="flex shrink-0 items-center gap-0.5 rounded-full bg-leaf-50 px-2 py-0.5 text-xs font-bold text-leaf-600">
-                      {r.rating} <Star size={9} className="fill-leaf-600" />
+                    <span className="flex shrink-0 items-center gap-1 rounded-full bg-leaf-50 border border-leaf-100 px-2 py-1 text-[11px] font-bold text-leaf-700">
+                      {r.rating} <Star size={10} className="fill-leaf-600" />
                     </span>
                   </div>
-                  <p className="mt-3 text-sm leading-relaxed text-ink/65">{r.comment}</p>
+                  <p className="mt-4 text-[13px] leading-relaxed text-ink/70">{r.comment}</p>
                 </div>
               ))}
             </div>
