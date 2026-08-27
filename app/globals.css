@@ -172,6 +172,67 @@ body {
   scrollbar-width: none;
 }
 
+/* Layered pastel wave treatment used behind Baby Shower theme artwork. */
+.theme-art {
+  isolation: isolate;
+}
+.theme-art__blob {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  width: 78%;
+  height: 125%;
+  top: -14%;
+  border-radius: 48% 52% 42% 58% / 42% 38% 62% 58%;
+  opacity: 0.9;
+}
+.theme-art__blob--pink {
+  left: -14%;
+  background: linear-gradient(145deg, #ffd9e4 8%, #ffc2d6 52%, #ffe6e8 100%);
+  transform: rotate(-13deg);
+}
+.theme-art__blob--lavender {
+  right: -16%;
+  background: linear-gradient(145deg, #e7d8ff 8%, #d3c2ff 52%, #f0e7ff 100%);
+  transform: rotate(16deg);
+}
+.theme-art--naming-ceremony .theme-art__blob--pink {
+  background: linear-gradient(145deg, #dceaff, #b9d8ff 58%, #edf5ff);
+}
+.theme-art--naming-ceremony .theme-art__blob--lavender {
+  background: linear-gradient(145deg, #c7e6ff, #9bc8f5 58%, #e6f3ff);
+}
+.theme-art--cradle-ceremony .theme-art__blob--pink {
+  background: linear-gradient(145deg, #ffe7df, #f8c9c2 58%, #fff2eb);
+}
+.theme-art--cradle-ceremony .theme-art__blob--lavender {
+  background: linear-gradient(145deg, #d7efd9, #b5dcbf 58%, #eef8eb);
+}
+.theme-art--gender-reveal .theme-art__blob--pink {
+  background: linear-gradient(145deg, #ffd7eb, #f7a9cf 58%, #ffe9f2);
+}
+.theme-art--gender-reveal .theme-art__blob--lavender {
+  background: linear-gradient(145deg, #cbe5ff, #92c6f4 58%, #e4f1ff);
+}
+.theme-art--safari-theme .theme-art__blob--pink {
+  background: linear-gradient(145deg, #e1f3d8, #b9dfa8 58%, #f0f8df);
+}
+.theme-art--safari-theme .theme-art__blob--lavender {
+  background: linear-gradient(145deg, #d9edbd, #a8ce83 58%, #edf7d9);
+}
+.theme-art--twinkle-twinkle-theme .theme-art__blob--pink {
+  background: linear-gradient(145deg, #e8e1ff, #c6b5f4 58%, #f3efff);
+}
+.theme-art--twinkle-twinkle-theme .theme-art__blob--lavender {
+  background: linear-gradient(145deg, #d1e5ff, #a8c8f1 58%, #edf5ff);
+}
+.theme-art--pastel-theme .theme-art__blob--pink {
+  background: linear-gradient(145deg, #ffdbe7, #f8b8c8 58%, #ffedf1);
+}
+.theme-art--pastel-theme .theme-art__blob--lavender {
+  background: linear-gradient(145deg, #d8eaff, #a9d2f2 58%, #edf8ff);
+}
+
 .btn-primary {
   display: inline-flex;
   align-items: center;

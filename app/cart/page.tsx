@@ -33,7 +33,7 @@ export default function CartPage() {
         <p className="max-w-sm text-sm text-ink/50">
           Browse our decoration catalog and add a package to get started with your booking.
         </p>
-        <Link href="/shop" className="btn-primary mt-2">
+        <Link href="/decorations" className="btn-primary mt-2">
           Browse Decorations <ArrowRight size={15} />
         </Link>
       </div>

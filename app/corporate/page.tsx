@@ -42,7 +42,7 @@ export default function CorporatePage() {
         </div>
       </div>
 
-      {corporateProducts.length > 0 && <ProductRail title="Corporate Packages" products={corporateProducts} viewAllHref="/shop/corporate" />}
+      {corporateProducts.length > 0 && <ProductRail title="Corporate Packages" products={corporateProducts} viewAllHref="/decorations/corporate" />}
 
       <div className="container-app max-w-xl pb-10">
         <CorporateForm />

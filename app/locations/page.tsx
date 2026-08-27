@@ -29,7 +29,7 @@ export default function LocationsPage() {
                 <p className="text-xs text-ink/45">{availableCount} decorations available</p>
               </div>
               <Link
-                href={`/shop?city=${encodeURIComponent(city)}`}
+                href={`/decorations?city=${encodeURIComponent(city)}`}
                 className="mt-4 flex items-center gap-1 text-sm font-semibold text-grape-700 hover:underline"
               >
                 Shop in {city} <ArrowRight size={14} />

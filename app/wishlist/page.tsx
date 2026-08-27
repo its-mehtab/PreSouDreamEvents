@@ -24,7 +24,7 @@ export default function WishlistPage() {
           <p className="max-w-sm text-sm text-ink/50">
             Tap the heart icon on any decoration to save it here for later.
           </p>
-          <Link href="/shop" className="btn-primary mt-1">Browse Decorations</Link>
+          <Link href="/decorations" className="btn-primary mt-1">Browse Decorations</Link>
         </div>
       ) : (
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 xl:grid-cols-5">

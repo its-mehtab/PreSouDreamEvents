@@ -144,7 +144,7 @@ export default function SearchBar({ variant = "desktop" }: { variant?: "desktop"
                         key={c.id}
                         onClick={() => {
                           setOpen(false);
-                          router.push(`/shop/${c.slug}`);
+                          router.push(`/decorations/${c.slug}`);
                         }}
                         className="flex w-full items-center gap-2 rounded-xl px-2 py-2 text-left text-sm hover:bg-paper"
                       >

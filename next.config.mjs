@@ -13,6 +13,20 @@ const nextConfig = {
     ],
     formats: ["image/avif", "image/webp"],
   },
+  async redirects() {
+    return [
+      {
+        source: '/shop',
+        destination: '/decorations',
+        permanent: true,
+      },
+      {
+        source: '/shop/:slug*',
+        destination: '/decorations/:slug*',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

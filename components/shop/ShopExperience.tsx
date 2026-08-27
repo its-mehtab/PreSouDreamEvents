@@ -24,6 +24,7 @@ export default function ShopExperience({
   initialFilters,
   initialSort = "recommended",
   hideHeader = false,
+  relatedDiscovery,
 }: {
   title: string;
   description?: string;
@@ -33,6 +34,7 @@ export default function ShopExperience({
   initialFilters?: Partial<FilterState>;
   initialSort?: SortOption;
   hideHeader?: boolean;
+  relatedDiscovery?: React.ReactNode;
 }) {
   const cleanInitial = initialFilters
     ? (Object.fromEntries(Object.entries(initialFilters).filter(([, v]) => v !== undefined)) as Partial<FilterState>)
@@ -80,6 +82,8 @@ export default function ShopExperience({
           </div>
         </>
       )}
+      
+      {relatedDiscovery}
 
       <div className={`mb-5 flex flex-wrap items-end justify-between gap-3 ${hideHeader ? 'mt-4' : ''}`}>
         <p className="mt-1 text-sm text-ink/45">{filtered.length} products</p>

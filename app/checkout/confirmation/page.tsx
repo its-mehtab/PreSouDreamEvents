@@ -36,7 +36,7 @@ function ConfirmationContent() {
     return (
       <div className="container-app flex flex-col items-center gap-3 py-24 text-center">
         <p className="font-display text-xl font-semibold">We couldn&apos;t find that booking</p>
-        <Link href="/shop" className="btn-primary">Browse Decorations</Link>
+        <Link href="/decorations" className="btn-primary">Browse Decorations</Link>
       </div>
     );
   }
@@ -101,7 +101,7 @@ function ConfirmationContent() {
         </a>
       </div>
 
-      <Link href="/shop" className="mt-6 text-sm text-ink/50 hover:text-grape-700">
+      <Link href="/decorations" className="mt-6 text-sm text-ink/50 hover:text-grape-700">
         Continue shopping →
       </Link>
     </div>

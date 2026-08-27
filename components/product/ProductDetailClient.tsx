@@ -165,7 +165,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
       <nav className="mb-5 flex items-center gap-1.5 text-xs text-ink/45">
         <Link href="/" className="hover:text-grape-700 transition-colors">Home</Link>
         <ChevronRight size={11} className="opacity-50" />
-        <Link href={`/shop/${categorySlug}`} className="hover:text-grape-700 transition-colors">{product.category}</Link>
+        <Link href={`/decorations/${categorySlug}`} className="hover:text-grape-700 transition-colors">{product.category}</Link>
         <ChevronRight size={11} className="opacity-50" />
         <span className="truncate max-w-[200px] text-ink/70">{product.name}</span>
       </nav>

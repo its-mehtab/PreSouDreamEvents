@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Outfit, Playfair_Display } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
@@ -9,16 +9,14 @@ import Header from "@/components/header/Header";
 import Footer from "@/components/Footer";
 import CartDrawer from "@/components/header/CartDrawer";
 
-const outfit = Outfit({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+const outfit = localFont({
+  src: "../public/fonts/outfit-latin.woff2",
   variable: "--font-outfit",
   display: "swap",
 });
 
-const playfairDisplay = Playfair_Display({
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
+const playfairDisplay = localFont({
+  src: "../public/fonts/playfair-latin.woff2",
   variable: "--font-playfair",
   display: "swap",
 });

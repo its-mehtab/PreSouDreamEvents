@@ -43,7 +43,7 @@ export default function CartDrawer() {
                 </div>
                 <p className="font-medium text-ink/70">Your cart is empty</p>
                 <p className="text-sm text-ink/45">Add a decoration package to get started.</p>
-                <Link href="/shop" onClick={closeDrawer} className="btn-primary mt-2">
+                <Link href="/decorations" onClick={closeDrawer} className="btn-primary mt-2">
                   Browse decorations
                 </Link>
               </div>

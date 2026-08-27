@@ -35,7 +35,7 @@ function OrdersTrackingContent() {
         <Package size={36} className="text-ink/25" />
         <p className="font-display text-xl font-semibold">No bookings yet</p>
         <p className="text-sm text-ink/50">Once you book a decoration, you can track its status here.</p>
-        <Link href="/shop" className="btn-primary mt-1">Browse Decorations</Link>
+        <Link href="/decorations" className="btn-primary mt-1">Browse Decorations</Link>
       </div>
     );
   }

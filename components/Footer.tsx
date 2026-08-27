@@ -65,7 +65,7 @@ export default function Footer() {
           <ul className="space-y-2 text-sm">
             {categories.slice(0, 6).map((c) => (
               <li key={c.id}>
-                <Link href={`/shop/${c.slug}`} className="hover:text-white">
+                <Link href={`/decorations/${c.slug}`} className="hover:text-white">
                   {c.name}
                 </Link>
               </li>
