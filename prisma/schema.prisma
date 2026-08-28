@@ -1,0 +1,264 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+enum OrderStatus {
+  CONFIRMED
+  DECORATOR_ASSIGNED
+  ON_THE_WAY
+  SETUP_STARTED
+  COMPLETED
+  CANCELLED
+}
+
+enum AvailabilityStatus {
+  AVAILABLE
+  LIMITED
+  UNAVAILABLE
+}
+
+// ------------------------------------------------------
+// Users & Auth
+// ------------------------------------------------------
+
+model User {
+  id        String   @id @default(cuid())
+  name      String?
+  phone     String   @unique
+  role      Role     @default(CUSTOMER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orders    Order[]
+  reviews   Review[]
+  otpCodes  OtpCode[]
+}
+
+model OtpCode {
+  id        String   @id @default(cuid())
+  phone     String
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String?
+}
+
+// ------------------------------------------------------
+// Dynamic Taxonomy 
+// ------------------------------------------------------
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  icon        String?
+  image       String?
+  description String?
+  products    Product[]
+}
+
+model Occasion {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  image       String?
+  description String?
+  products    Product[]
+}
+
+model Theme {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  image       String?
+  description String?
+  products    Product[]
+}
+
+model DecorationType {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  image       String?
+  description String?
+  products    Product[]
+}
+
+model Style {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  products    Product[]
+}
+
+model City {
+  id             String                    @id @default(cuid())
+  name           String                    @unique
+  slug           String                    @unique
+  availabilities ProductCityAvailability[]
+  orders         Order[]
+}
+
+// ------------------------------------------------------
+// Core Entities: Product & Variations
+// ------------------------------------------------------
+
+model Product {
+  id                 String   @id @default(cuid())
+  slug               String   @unique
+  name               String
+  tagline            String?
+  description        String?
+  price              Float
+  mrp                Float?
+  images             String[] // Array of Cloudinary URLs
+  setupDurationMins  Int      @default(60)
+  cancellationInfo   String?
+  faqs               Json?    // e.g. [{ q: string, a: string }]
+  whatsIncluded      String[] // Array of text items
+  numberOfBalloons   Int?
+  
+  // Merchandising Flags
+  isCustomizable     Boolean  @default(true)
+  isPremium          Boolean  @default(false)
+  isTrending         Boolean  @default(false)
+  isBestSeller       Boolean  @default(false)
+  isNewArrival       Boolean  @default(false)
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  // Relationships to Taxonomy
+  categoryId         String?
+  category           Category? @relation(fields: [categoryId], references: [id])
+  
+  occasions          Occasion[]
+  themes             Theme[]
+  decorationTypes    DecorationType[]
+  styles             Style[]
+
+  // Child Entities
+  cityAvailabilities ProductCityAvailability[]
+  customizations     CustomizationOption[]
+  addOns             ProductAddOn[]
+  reviews            Review[]
+  orderItems         OrderItem[]
+}
+
+model ProductCityAvailability {
+  id           String             @id @default(cuid())
+  productId    String
+  cityId       String
+  status       AvailabilityStatus @default(AVAILABLE)
+  earliestSlot String?
+
+  product      Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  city         City    @relation(fields: [cityId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, cityId])
+}
+
+model AddOn {
+  id        String   @id @default(cuid())
+  name      String
+  price     Float
+  image     String? // Cloudinary URL
+  products  ProductAddOn[]
+}
+
+model ProductAddOn {
+  productId String
+  addOnId   String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  addOn     AddOn   @relation(fields: [addOnId], references: [id], onDelete: Cascade)
+
+  @@id([productId, addOnId])
+}
+
+model CustomizationOption {
+  id          String   @id @default(cuid())
+  productId   String
+  label       String
+  type        String   // 'color', 'text', 'select', 'toggle'
+  choices     String[] // Available dropdown choices if type is 'select' or 'color'
+  priceDelta  Float    @default(0) // Extra cost if any
+  
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+// ------------------------------------------------------
+// Orders, Checkout & Reviews
+// ------------------------------------------------------
+
+model Order {
+  id          String      @id @default(cuid())
+  userId      String
+  cityId      String
+  venue       String      // e.g., 'Home', 'Hotel', 'Hall'
+  eventDate   DateTime
+  eventTime   String
+  totalPrice  Float
+  status      OrderStatus @default(CONFIRMED)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  couponId    String?
+
+  user        User        @relation(fields: [userId], references: [id])
+  city        City        @relation(fields: [cityId], references: [id])
+  coupon      Discount?   @relation(fields: [couponId], references: [id])
+  items       OrderItem[]
+}
+
+model OrderItem {
+  id             String   @id @default(cuid())
+  orderId        String
+  productId      String
+  quantity       Int      @default(1)
+  priceAtBooking Float
+  
+  customizations Json?    
+  addOns         Json?    
+  
+  order          Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product        Product  @relation(fields: [productId], references: [id])
+}
+
+model Review {
+  id          String   @id @default(cuid())
+  productId   String
+  userId      String
+  rating      Int
+  comment     String
+  city        String
+  createdAt   DateTime @default(now())
+
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model Discount {
+  id          String    @id @default(cuid())
+  code        String    @unique
+  description String?
+  discountPct Float?    
+  discountAmt Float?    
+  minOrderAmt Float?
+  isActive    Boolean   @default(true)
+  expiresAt   DateTime?
+  
+  orders      Order[]
+}
+

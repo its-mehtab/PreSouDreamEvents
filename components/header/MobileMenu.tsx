@@ -99,11 +99,13 @@ export default function MobileMenu({
                       >
                         <div className="px-4 py-2 space-y-4 bg-paper/50 rounded-xl mt-1 mb-2 border border-ink/5">
                           {c.columns.map((colGroup, colIdx) => {
-                            const hasLinks = colGroup.some((g) => g.links.length > 0);
+                            const hasLinks = colGroup.some(
+                              (g) => g.links.length > 0,
+                            );
                             if (!hasLinks) return null;
                             return (
                               <div key={colIdx} className="space-y-4">
-                                {colGroup.map((group, gIdx) => 
+                                {colGroup.map((group, gIdx) =>
                                   group.links.length > 0 ? (
                                     <div key={gIdx}>
                                       <p className="mb-1 text-[11px] font-bold uppercase tracking-wider text-ink/40">
@@ -123,7 +125,7 @@ export default function MobileMenu({
                                         ))}
                                       </ul>
                                     </div>
-                                  ) : null
+                                  ) : null,
                                 )}
                               </div>
                             );
@@ -134,7 +136,7 @@ export default function MobileMenu({
                   </AnimatePresence>
                 </div>
               ))}
-              
+
               <div className="px-3 py-3">
                 <Link
                   href="/plan-my-celebration"
@@ -142,7 +144,9 @@ export default function MobileMenu({
                   className="group flex w-full items-center justify-between gap-2 rounded-xl bg-grape-50 px-4 py-3 text-sm font-bold text-grape-700 transition-all hover:bg-grape-600 hover:text-white"
                 >
                   <span>Plan My Celebration</span>
-                  <span className="transition-transform group-hover:rotate-12">✨</span>
+                  <span className="transition-transform group-hover:rotate-12">
+                    ✨
+                  </span>
                 </Link>
               </div>
 

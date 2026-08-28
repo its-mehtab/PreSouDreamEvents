@@ -1,20 +1,21 @@
 import { z } from "zod";
 
-export const loginSchema = z.object({
-  email: z.string().min(1, "Email is required").email("Invalid email address"),
-  password: z.string().min(1, "Password is required"),
+// Validates 10-digit Indian phone numbers or general formats
+export const phoneSchema = z
+  .string()
+  .min(10, "Phone number must be at least 10 digits")
+  .max(15, "Phone number is too long")
+  .regex(/^\+?[0-9]+$/, "Must contain only digits and optional + prefix");
+
+export const requestOtpSchema = z.object({
+  phone: phoneSchema,
 });
 
-export type LoginFormValues = z.infer<typeof loginSchema>;
+export type RequestOtpValues = z.infer<typeof requestOtpSchema>;
 
-export const signupSchema = z.object({
-  fullName: z.string().min(2, "Full name is required"),
-  email: z.string().min(1, "Email is required").email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  confirmPassword: z.string().min(1, "Please confirm your password"),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"],
+export const verifyOtpSchema = z.object({
+  phone: phoneSchema,
+  code: z.string().length(6, "OTP must be exactly 6 digits"),
 });
 
-export type SignupFormValues = z.infer<typeof signupSchema>;
+export type VerifyOtpValues = z.infer<typeof verifyOtpSchema>;
