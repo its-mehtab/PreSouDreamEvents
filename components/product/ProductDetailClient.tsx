@@ -50,6 +50,7 @@ import {
 } from "@/components/ui/CustomColorPicker";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
+import { submitReview } from "@/lib/actions/product";
 
 const TIME_SLOTS = [
   "9 AM – 11 AM",
@@ -116,6 +117,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
   const [activeImage, setActiveImage] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
 
   const computedReviewCount = product.reviews?.length || 0;
   const computedRating =
@@ -1320,6 +1322,18 @@ export default function ProductDetailClient({ product }: { product: Product }) {
         {/* Reviews tab */}
         {activeTab === "reviews" && (
           <div className="mt-6 space-y-4" id="reviews">
+            {/* Header: title + Write a Review button */}
+            <div className="flex items-center justify-between">
+              <p className="font-semibold text-ink">Customer Reviews</p>
+              <button
+                onClick={() => setReviewModalOpen(true)}
+                className="flex items-center gap-2 rounded-full border border-grape-200 bg-grape-50 px-4 py-2 text-sm font-semibold text-grape-700 transition-colors hover:bg-grape-100"
+              >
+                <Pencil size={14} />
+                Write a Review
+              </button>
+            </div>
+
             {/* Rating summary */}
             {computedReviewCount > 0 ? (
               <>
@@ -1427,6 +1441,13 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                   Be the first to experience this package and share your
                   thoughts!
                 </p>
+                <button
+                  onClick={() => setReviewModalOpen(true)}
+                  className="mt-4 flex items-center gap-2 rounded-full bg-grape-700 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-grape-800"
+                >
+                  <Pencil size={14} />
+                  Write the first review
+                </button>
               </div>
             )}
           </div>
@@ -1480,6 +1501,18 @@ export default function ProductDetailClient({ product }: { product: Product }) {
         </div>
       )}
 
+      {/* ── Review Modal ── */}
+      <AnimatePresence>
+        {reviewModalOpen && (
+          <ReviewModal
+            productId={product.id}
+            productSlug={product.slug}
+            productName={product.name}
+            onClose={() => setReviewModalOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Floating WhatsApp */}
       <WhatsAppCTA
         variant="floating"
@@ -1518,5 +1551,207 @@ function FaqItem({ q, a }: { q: string; a: string }) {
         <p className="px-4 pb-4 text-sm leading-relaxed text-ink/60">{a}</p>
       )}
     </div>
+  );
+}
+
+/** ── Review Modal ── */
+function ReviewModal({
+  productId,
+  productSlug,
+  productName,
+  onClose,
+}: {
+  productId: string;
+  productSlug: string;
+  productName: string;
+  onClose: () => void;
+}) {
+  const [rating, setRating] = useState(0);
+  const [hovered, setHovered] = useState(0);
+  const [comment, setComment] = useState("");
+  const [city, setCity] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  const INDIAN_CITIES = [
+    "Kolkata", "Mumbai", "Delhi", "Bangalore", "Chennai",
+    "Hyderabad", "Pune", "Ahmedabad", "Jaipur", "Surat",
+    "Lucknow", "Bhopal", "Chandigarh", "Goa", "Indore",
+  ];
+
+  const RATING_LABELS = ["", "Poor", "Fair", "Good", "Great", "Excellent!"];
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (rating === 0) { setError("Please select a star rating."); return; }
+    if (!comment.trim()) { setError("Please write your review."); return; }
+    if (!city) { setError("Please select your city."); return; }
+    setError("");
+    setSubmitting(true);
+    const result = await submitReview({
+      productId,
+      productSlug,
+      rating,
+      comment: comment.trim(),
+      city,
+    });
+    setSubmitting(false);
+    if (result.success) {
+      toast.success("Review submitted! Thank you for your feedback 🎉");
+      onClose();
+    } else {
+      setError(result.error || "Something went wrong. Please try again.");
+    }
+  }
+
+  return (
+    <>
+      {/* Backdrop */}
+      <motion.div
+        key="review-backdrop"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[90] bg-ink/60 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      {/* Sheet */}
+      <motion.div
+        key="review-modal"
+        initial={{ opacity: 0, y: 24, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 24, scale: 0.97 }}
+        transition={{ type: "spring", damping: 26, stiffness: 340 }}
+        className="fixed inset-x-4 bottom-0 top-0 z-[91] m-auto flex h-fit max-h-[92vh] max-w-lg flex-col overflow-y-auto rounded-2xl bg-white shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-ink/10 px-6 py-4">
+          <div>
+            <p className="font-display text-[17px] font-bold text-ink">Write a Review</p>
+            <p className="mt-0.5 line-clamp-1 text-xs text-ink/50">{productName}</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="rounded-full p-2 text-ink/40 transition-colors hover:bg-ink/5 hover:text-ink"
+            aria-label="Close"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5 px-6 py-5">
+          {/* Star rating picker */}
+          <div>
+            <p className="mb-3 text-sm font-semibold text-ink">
+              Your Rating <span className="text-punch-500">*</span>
+            </p>
+            <div className="flex items-center gap-2">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onMouseEnter={() => setHovered(star)}
+                  onMouseLeave={() => setHovered(0)}
+                  onClick={() => setRating(star)}
+                  className="transition-transform hover:scale-110 active:scale-95"
+                  aria-label={`Rate ${star} star${star > 1 ? "s" : ""}`}
+                >
+                  <Star
+                    size={34}
+                    className={
+                      star <= (hovered || rating)
+                        ? "fill-marigold-400 text-marigold-400 drop-shadow-sm"
+                        : "fill-ink/10 text-ink/10"
+                    }
+                  />
+                </button>
+              ))}
+              {(hovered || rating) > 0 && (
+                <motion.span
+                  key={hovered || rating}
+                  initial={{ opacity: 0, x: -6 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="ml-1 text-sm font-semibold text-ink/60"
+                >
+                  {RATING_LABELS[hovered || rating]}
+                </motion.span>
+              )}
+            </div>
+          </div>
+
+          {/* Comment */}
+          <div>
+            <label className="mb-1.5 block text-sm font-semibold text-ink">
+              Your Review <span className="text-punch-500">*</span>
+            </label>
+            <textarea
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              rows={4}
+              maxLength={600}
+              className="w-full resize-none rounded-xl border border-ink/15 bg-paper px-4 py-3 text-sm text-ink placeholder:text-ink/35 focus:border-grape-400 focus:outline-none focus:ring-2 focus:ring-grape-200 transition-colors"
+              placeholder="Tell us about your experience — the decoration quality, the setup team, the overall vibe..."
+            />
+            <p className="mt-1 text-right text-[11px] text-ink/35">
+              {comment.length}/600
+            </p>
+          </div>
+
+          {/* City */}
+          <div>
+            <label className="mb-1.5 block text-sm font-semibold text-ink">
+              Your City <span className="text-punch-500">*</span>
+            </label>
+            <select
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              className="w-full rounded-xl border border-ink/15 bg-paper px-4 py-3 text-sm text-ink focus:border-grape-400 focus:outline-none focus:ring-2 focus:ring-grape-200 transition-colors"
+            >
+              <option value="">Select your city…</option>
+              {INDIAN_CITIES.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Error banner */}
+          <AnimatePresence>
+            {error && (
+              <motion.p
+                key="review-error"
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                className="flex items-center gap-2 rounded-xl bg-punch-50 px-3 py-2.5 text-sm font-medium text-punch-600"
+              >
+                <AlertCircle size={14} className="shrink-0" />
+                {error}
+              </motion.p>
+            )}
+          </AnimatePresence>
+
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={submitting}
+            className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-grape-700 to-grape-900 py-3.5 text-sm font-bold text-white shadow-md transition-all hover:shadow-lg active:scale-[0.98] disabled:opacity-60"
+          >
+            {submitting ? (
+              <>
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                Submitting…
+              </>
+            ) : (
+              <>
+                <Send size={15} />
+                Submit Review
+              </>
+            )}
+          </button>
+        </form>
+      </motion.div>
+    </>
   );
 }
