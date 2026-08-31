@@ -1,8 +1,11 @@
 "use server";
 
+import { writeFile, mkdir } from "fs/promises";
+import path from "path";
+
 import { z } from "zod";
 import prisma from "@/lib/prisma";
-import { createSession, deleteSession } from "@/lib/auth/session";
+import { createSession, deleteSession, getSession } from "@/lib/auth/session";
 import { revalidatePath } from "next/cache";
 
 const phoneSchema = z.string().min(10, "Invalid phone number");
@@ -83,5 +86,51 @@ export async function logout() {
   await deleteSession();
   revalidatePath("/");
   return { success: true };
+}
+
+export async function updateUser(formData: FormData) {
+  try {
+    const session = await getSession();
+    if (!session?.userId) return { success: false, error: "Not authenticated" };
+
+    const name = formData.get("name") as string;
+    const email = formData.get("email") as string;
+    const address = formData.get("address") as string;
+    const dob = formData.get("dob") as string;
+    const gender = formData.get("gender") as string;
+    const file = formData.get("image") as File | null;
+    
+    let imageUrl = undefined;
+    
+    if (file && file.size > 0) {
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const filename = `${session.userId}-${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
+      
+      const uploadDir = path.join(process.cwd(), "public", "uploads");
+      try {
+        await mkdir(uploadDir, { recursive: true });
+      } catch (e) {} // ignore if exists
+      
+      await writeFile(path.join(uploadDir, filename), buffer);
+      imageUrl = `/uploads/${filename}`;
+    }
+
+    await prisma.user.update({
+      where: { id: session.userId },
+      data: { 
+        name: name || null,
+        email: email || null,
+        address: address || null,
+        dob: dob ? new Date(dob) : null,
+        gender: gender || null,
+        ...(imageUrl && { image: imageUrl }), // only update image if a new one was uploaded
+      },
+    });
+    
+    revalidatePath("/account");
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
 }
 

@@ -12,6 +12,8 @@ import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { cn } from "@/lib/utils";
 
+import { NavCategory } from "@/lib/navigation-config";
+
 const PROMOS = [
   "Birthday Decorations Starting ₹999",
   "Premium Event Setups, Now Bookable Online",
@@ -19,7 +21,11 @@ const PROMOS = [
   "Same-day setup? WhatsApp us directly",
 ];
 
-export default function Header() {
+interface HeaderProps {
+  navConfig: NavCategory[];
+}
+
+export default function Header({ navConfig }: HeaderProps) {
   const { itemCount, openDrawer } = useCart();
   const { ids } = useWishlist();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -47,7 +53,7 @@ export default function Header() {
       <header
         className={cn(
           "sticky top-0 z-50 bg-white transition-shadow",
-          scrolled && "shadow-card"
+          scrolled && "shadow-card",
         )}
       >
         <div className="container-app flex items-center gap-3 py-3">
@@ -59,7 +65,11 @@ export default function Header() {
             <Menu size={22} />
           </button>
 
-          <Link href="/" className="flex shrink-0 items-center gap-1.5" aria-label="PreSou Dream Events Home">
+          <Link
+            href="/"
+            className="flex shrink-0 items-center gap-1.5"
+            aria-label="PreSou Dream Events Home"
+          >
             <Image
               src="/logo.png"
               alt="PreSou Dream Events"
@@ -117,10 +127,14 @@ export default function Header() {
           <SearchBar variant="mobile" />
         </div>
 
-        <CategoryNav />
+        <CategoryNav navConfig={navConfig} />
       </header>
 
-      <MobileMenu open={mobileOpen} onClose={() => setMobileOpen(false)} />
+      <MobileMenu
+        open={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+        navConfig={navConfig}
+      />
     </>
   );
 }

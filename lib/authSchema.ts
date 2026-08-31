@@ -14,7 +14,6 @@ export const requestOtpSchema = z.object({
 export type RequestOtpValues = z.infer<typeof requestOtpSchema>;
 
 export const verifyOtpSchema = z.object({
-  phone: phoneSchema,
   code: z.string().length(6, "OTP must be exactly 6 digits"),
 });
 

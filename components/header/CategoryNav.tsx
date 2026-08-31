@@ -4,10 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
-import { navigationConfig } from "@/lib/navigation-config";
 import { ChevronDown } from "lucide-react";
+import { NavCategory } from "@/lib/navigation-config";
 
-export default function CategoryNav() {
+interface CategoryNavProps {
+  navConfig: NavCategory[];
+}
+
+export default function CategoryNav({ navConfig }: CategoryNavProps) {
   const [openSlug, setOpenSlug] = useState<string | null>(null);
 
   return (
@@ -18,7 +22,7 @@ export default function CategoryNav() {
       <div className="container-app">
         <div className="relative flex items-center justify-between">
           <div className="flex items-center gap-1 overflow-x-auto scrollbar-none">
-            {navigationConfig.map((c) => (
+            {navConfig.map((c) => (
               <div
                 key={c.id}
                 onMouseEnter={() => setOpenSlug(c.slug)}
@@ -37,7 +41,7 @@ export default function CategoryNav() {
 
           <Link
             href="/plan-my-celebration"
-            className="group flex shrink-0 items-center gap-2 rounded-full bg-grape-50 px-4 py-1.5 text-sm font-bold text-grape-700 transition-all hover:bg-grape-600 hover:text-white hover:shadow-md"
+            className="group flex shrink-0 items-center gap-2 rounded-full bg-grape-50 px-4 py-1.5 text-sm font-bold text-grape-700 transition-all hover:bg-grape-100/80 hover:text-grape-800 hover:shadow-md"
           >
             <span>Plan My Celebration</span>
             <span className="transition-transform group-hover:rotate-12">
@@ -56,9 +60,7 @@ export default function CategoryNav() {
               >
                 <div className="flex gap-12 rounded-2xl border border-ink/10 bg-white p-8 shadow-xl">
                   {(() => {
-                    const cat = navigationConfig.find(
-                      (c) => c.slug === openSlug,
-                    )!;
+                    const cat = navConfig.find((c) => c.slug === openSlug)!;
                     return (
                       <>
                         {cat.image && (

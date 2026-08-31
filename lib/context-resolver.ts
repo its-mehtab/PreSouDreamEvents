@@ -101,25 +101,24 @@ export function parseSlug(slugs: string[]): LandingContext {
   return ctx;
 }
 
-export function applyContext(
-  productsList: Product[],
-  ctx: LandingContext,
-): Product[] {
-  return productsList.filter((p) => {
+export function applyContext(productsList: any[], ctx: LandingContext): any[] {
+  return productsList.filter((p: any) => {
     if (
       ctx.occasion &&
-      p.category !== ctx.occasion &&
-      !p.secondaryCategories.includes(ctx.occasion as any)
+      (!p.occasions ||
+        !p.occasions.some((occ: any) => occ.name === ctx.occasion))
     ) {
       return false;
     }
     if (ctx.decorationType && p.decorationType !== ctx.decorationType) {
       return false;
     }
-    if (ctx.theme && !p.theme.includes(ctx.theme)) {
+    const themes = (p as any).themes || p.theme || [];
+    if (ctx.theme && !themes.includes(ctx.theme)) {
       return false;
     }
-    if (ctx.style && !p.style.includes(ctx.style)) {
+    const styles = (p as any).styles || p.style || [];
+    if (ctx.style && !styles.includes(ctx.style)) {
       return false;
     }
     if (ctx.isPremium && !p.isPremium) return false;
@@ -128,16 +127,21 @@ export function applyContext(
     if (ctx.isNewArrival && !p.isNewArrival) return false;
     if (ctx.maxPrice && p.price > ctx.maxPrice) return false;
     if (ctx.city) {
-      const cityData = p.cities.find((c) => c.city === ctx.city);
-      if (!cityData || cityData.status === "unavailable") return false;
+      const cityData = p.cityAvailabilities?.find(
+        (c: any) =>
+          c.city?.slug === ctx.city ||
+          c.city?.name?.toLowerCase() === ctx.city!.toLowerCase(),
+      );
+      if (!cityData || cityData.status === "UNAVAILABLE") return false;
     }
     // Audience matching (for-dad, for-mom, etc)
     if (ctx.audience) {
       const q = ctx.audience.toLowerCase().replace("for ", "");
       if (
         !p.name.toLowerCase().includes(q) &&
-        !p.tagline.toLowerCase().includes(q) &&
-        !p.category.toLowerCase().includes(q)
+        !p.tagline?.toLowerCase().includes(q) &&
+        (!p.occasions ||
+          !p.occasions.some((occ: any) => occ.name.toLowerCase().includes(q)))
       ) {
         return false;
       }
@@ -194,7 +198,7 @@ const fallbackImages = [
 
 export function generateRelatedDiscovery(
   ctx: LandingContext,
-  filteredProducts: Product[],
+  filteredProducts: any[],
 ): RelatedDiscoveryLink[] {
   const links: RelatedDiscoveryLink[] = [];
   let fallbackIndex = 0;
@@ -235,27 +239,31 @@ export function generateRelatedDiscovery(
 
   // Suggest Occasions if not set
   if (!ctx.occasion) {
-    const presentOccasions = new Set(filteredProducts.map((p) => p.category));
-    presentOccasions.forEach((occ) => addLink(occ, { ...ctx, occasion: occ }));
-  } else {
-    // If occasion is set, suggest related secondary categories or other closely tied occasions?
+    const presentOccasions = new Set(
+      filteredProducts.flatMap(
+        (p: any) =>
+          p.occasions?.map((o: any) => o.name) || [p.category].filter(Boolean),
+      ),
+    );
     // Let's stick to the main ones if they are in the pool
   }
 
   // Suggest Decoration Types
   if (!ctx.decorationType) {
-    const presentTypes = new Set(filteredProducts.map((p) => p.decorationType));
+    const presentTypes = new Set(
+      filteredProducts.map((p) => p.decorationType).filter(Boolean),
+    );
     presentTypes.forEach((dt) => addLink(dt, { ...ctx, decorationType: dt }));
   }
 
-  // Suggest Themes
   if (!ctx.theme) {
-    const presentThemes = new Set(filteredProducts.flatMap((p) => p.theme));
+    const presentThemes = new Set(
+      filteredProducts.flatMap((p: any) => p.themes || p.theme || []),
+    );
     presentThemes.forEach((t) => addLink(t, { ...ctx, theme: t }));
   }
 
   // Suggest Merchandising
-  if (!ctx.isPremium) addLink("Premium", { ...ctx, isPremium: true });
 
   return links;
 }

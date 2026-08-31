@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Product, CityAvailability, Review, AddOn, CustomizationOption } from "@/lib/types";
 import { cities } from "@/lib/data/categories";
 

@@ -75,54 +75,15 @@ async function main() {
     }
   }
 
-  console.log("Seeding Themes...");
-  const themeMap = new Map();
-  for (const t of allThemes) {
-    const slug = slugify(t);
-    const dbTheme = await prisma.theme.upsert({
-      where: { slug },
-      update: {},
-      create: { name: t, slug },
-    });
-    themeMap.set(slug, dbTheme.id);
-  }
-
-  console.log("Seeding Styles...");
-  const styleMap = new Map();
-  for (const s of allStyles) {
-    const slug = slugify(s);
-    const dbStyle = await prisma.style.upsert({
-      where: { slug },
-      update: {},
-      create: { name: s, slug },
-    });
-    styleMap.set(slug, dbStyle.id);
-  }
-
-  console.log("Seeding Decoration Types...");
-  // We'll infer decoration types from the products
-  const decorTypes = new Set<string>();
-  for (const p of products) {
-    decorTypes.add(p.decorationType);
-  }
-  const decorTypeMap = new Map();
-  for (const dt of decorTypes) {
-    const slug = slugify(dt);
-    const dbDt = await prisma.decorationType.upsert({
-      where: { slug },
-      update: {},
-      create: { name: dt, slug },
-    });
-    decorTypeMap.set(slug, dbDt.id);
-  }
-
   // 3. Products
   console.log(`Seeding ${products.length} products...`);
   for (const p of products) {
     const slug = slugify(p.name);
 
     // Connect Taxonomy
-    const connectOccasions = [{ id: occasionMap.get(slugify(p.category)) }].filter(x => x.id !== undefined);
+    const connectOccasions = [
+      { id: occasionMap.get(slugify(p.category)) },
+    ].filter((x) => x.id !== undefined);
     if (p.secondaryCategories) {
       for (const sc of p.secondaryCategories) {
         if (occasionMap.has(slugify(sc)))
@@ -130,17 +91,7 @@ async function main() {
       }
     }
 
-    const connectThemes = p.theme
-      .map((t) => ({ id: themeMap.get(slugify(t)) }))
-      .filter((x) => x.id !== undefined);
-    const connectStyles = p.style
-      .map((s) => ({ id: styleMap.get(slugify(s)) }))
-      .filter((x) => x.id !== undefined);
-    const connectDecorTypes = [
-      { id: decorTypeMap.get(slugify(p.decorationType)) },
-    ].filter(x => x.id !== undefined);
-
-    // Upsert product
+    // Create Product
     const dbProduct = await prisma.product.upsert({
       where: { slug },
       update: {
@@ -168,10 +119,10 @@ async function main() {
         isTrending: p.isTrending,
         isBestSeller: p.isBestSeller,
         isNewArrival: p.isNewArrival,
+        decorationType: p.decorationType,
+        themes: p.theme,
+        styles: p.style,
         occasions: { connect: connectOccasions },
-        themes: { connect: connectThemes },
-        styles: { connect: connectStyles },
-        decorationTypes: { connect: connectDecorTypes },
       },
     });
 
@@ -207,10 +158,47 @@ async function main() {
       }
     }
 
+    // AddOns
+    if (p.addOns) {
+      for (const addon of p.addOns) {
+        const dbAddOn = await prisma.addOn.upsert({
+          where: { id: addon.id },
+          update: { name: addon.name, price: addon.price, image: addon.image },
+          create: {
+            id: addon.id,
+            name: addon.name,
+            price: addon.price,
+            image: addon.image,
+          },
+        });
+        await prisma.productAddOn.upsert({
+          where: {
+            productId_addOnId: { productId: dbProduct.id, addOnId: dbAddOn.id },
+          },
+          update: {},
+          create: { productId: dbProduct.id, addOnId: dbAddOn.id },
+        });
+      }
+    }
+
     // Customizations
     if (p.customizations) {
       for (const cust of p.customizations) {
-        // Just create them (skip duplicates might be tricky if no unique constraint, so we just clear and create for simplicity)
+        // Find existing to avoid duplicates
+        const existing = await prisma.customizationOption.findFirst({
+          where: { productId: dbProduct.id, label: cust.label },
+        });
+        if (!existing) {
+          await prisma.customizationOption.create({
+            data: {
+              productId: dbProduct.id,
+              label: cust.label,
+              type: cust.type,
+              choices: cust.choices || [],
+              priceDelta: cust.priceDelta || 0,
+            },
+          });
+        }
       }
     }
   }

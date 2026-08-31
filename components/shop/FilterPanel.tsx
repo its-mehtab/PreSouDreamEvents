@@ -1,9 +1,8 @@
 "use client";
 
-import { FilterState, DEFAULT_MAX_PRICE } from "@/lib/filtering";
-import { allThemes, allStyles, cities } from "@/lib/data/categories";
-import { formatPrice, cn } from "@/lib/utils";
-import { Select } from "@/components/ui/Select";
+import { FilterState } from "@/lib/filtering";
+import { allThemes, allStyles } from "@/lib/data/categories";
+import { cn } from "@/lib/utils";
 
 const OCCASIONS = [
   "Birthday", "Anniversary", "Baby Shower", "Kids Themes", "Romantic", "Wedding",
@@ -109,76 +108,7 @@ export default function FilterPanel({
         </div>
       </Section>
 
-      <Section title={`Price up to ${formatPrice(filters.maxPrice)}`}>
-        <input
-          type="range"
-          min={499}
-          max={DEFAULT_MAX_PRICE}
-          step={100}
-          value={filters.maxPrice}
-          onChange={(e) => onChange({ ...filters, maxPrice: Number(e.target.value) })}
-          className="w-full accent-grape-600"
-        />
-        <div className="mt-1 flex justify-between text-xs text-ink/40">
-          <span>₹499</span>
-          <span>{formatPrice(DEFAULT_MAX_PRICE)}+</span>
-        </div>
-      </Section>
 
-      <Section title="Rating">
-        <div className="flex gap-1.5">
-          {[4.5, 4, 3.5, 0].map((r) => (
-            <button
-              key={r}
-              onClick={() => onChange({ ...filters, minRating: r })}
-              className={cn("chip", filters.minRating === r && "chip-active")}
-            >
-              {r === 0 ? "Any" : `${r}+`}
-            </button>
-          ))}
-        </div>
-      </Section>
-
-      <Section title="City Availability">
-        <Select
-          options={[{ label: "Any city", value: "" }, ...cities]}
-          value={filters.city ?? ""}
-          onChange={(v) => onChange({ ...filters, city: v || null })}
-          placeholder="Any city"
-        />
-      </Section>
-
-      <Section title="More filters">
-        <div className="flex flex-wrap gap-1.5">
-          <label className={resultCountBadge(filters.customizableOnly)}>
-            <input
-              type="checkbox"
-              className="hidden"
-              checked={filters.customizableOnly}
-              onChange={(e) => onChange({ ...filters, customizableOnly: e.target.checked })}
-            />
-            Customizable
-          </label>
-          <label className={resultCountBadge(filters.premiumOnly)}>
-            <input
-              type="checkbox"
-              className="hidden"
-              checked={filters.premiumOnly}
-              onChange={(e) => onChange({ ...filters, premiumOnly: e.target.checked })}
-            />
-            Premium
-          </label>
-          <label className={resultCountBadge(filters.trendingOnly)}>
-            <input
-              type="checkbox"
-              className="hidden"
-              checked={filters.trendingOnly}
-              onChange={(e) => onChange({ ...filters, trendingOnly: e.target.checked })}
-            />
-            Trending
-          </label>
-        </div>
-      </Section>
     </div>
   );
 }

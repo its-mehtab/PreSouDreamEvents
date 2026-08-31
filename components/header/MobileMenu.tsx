@@ -14,15 +14,17 @@ import {
   Phone,
   ChevronDown,
 } from "lucide-react";
-import { navigationConfig } from "@/lib/navigation-config";
+import { NavCategory } from "@/lib/navigation-config";
 import LocationSelector from "@/components/header/LocationSelector";
 
 export default function MobileMenu({
   open,
   onClose,
+  navConfig,
 }: {
   open: boolean;
   onClose: () => void;
+  navConfig: NavCategory[];
 }) {
   const [openCategory, setOpenCategory] = useState<string | null>(null);
 
@@ -77,7 +79,7 @@ export default function MobileMenu({
               <p className="px-3 pb-1 pt-3 text-xs font-semibold uppercase tracking-wide text-ink/40">
                 Shop by category
               </p>
-              {navigationConfig.map((c) => (
+              {navConfig.map((c) => (
                 <div key={c.id}>
                   <button
                     onClick={() => toggleCategory(c.slug)}
@@ -141,7 +143,7 @@ export default function MobileMenu({
                 <Link
                   href="/plan-my-celebration"
                   onClick={onClose}
-                  className="group flex w-full items-center justify-between gap-2 rounded-xl bg-grape-50 px-4 py-3 text-sm font-bold text-grape-700 transition-all hover:bg-grape-600 hover:text-white"
+                  className="group flex w-full items-center justify-between gap-2 rounded-xl bg-grape-50 px-4 py-3 text-sm font-bold text-grape-700 transition-all hover:bg-grape-100 hover:text-grape-800"
                 >
                   <span>Plan My Celebration</span>
                   <span className="transition-transform group-hover:rotate-12">
@@ -155,7 +157,7 @@ export default function MobileMenu({
                 { href: "/account", label: "Account", icon: User },
                 { href: "/wishlist", label: "Wishlist", icon: Heart },
                 {
-                  href: "/account/orders",
+                  href: "/account/bookings",
                   label: "Track Booking",
                   icon: Package,
                 },

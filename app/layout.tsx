@@ -27,14 +27,25 @@ export const metadata: Metadata = {
     "Shop balloon arches, room decorations, romantic setups & event packages. Choose your city, date and time, customize, and book in minutes.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+import { getGlobalNavConfig } from "@/lib/actions/nav";
+
+export default async function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const navConfig = await getGlobalNavConfig();
+
   return (
-    <html lang="en" className={`${outfit.variable} ${playfairDisplay.variable}`}>
+    <html
+      lang="en"
+      className={`${outfit.variable} ${playfairDisplay.variable}`}
+    >
       <body className="font-sans">
         <LocationProvider>
           <WishlistProvider>
             <CartProvider>
-              <Header />
+              <Header navConfig={navConfig} />
               <main className="min-h-screen">{children}</main>
               <Footer />
               <CartDrawer />

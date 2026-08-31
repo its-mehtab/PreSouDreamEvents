@@ -2,27 +2,32 @@ import PromoBanner from "@/components/home/PromoBanner";
 import OccasionNav from "@/components/home/OccasionNav";
 import ProductRail from "@/components/product/ProductRail";
 import WhatsAppCTA from "@/components/WhatsAppCTA";
-import { products } from "@/lib/data/products";
+import { getShopProducts } from "@/lib/actions/product";
 import Link from "next/link";
 import { ArrowRight, ShieldCheck, Clock, Sparkles, Truck } from "lucide-react";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const allProducts = await getShopProducts();
+  const products = allProducts as any[];
+
   const birthdayBalloon = products.filter(
-    (p) => p.category === "Birthday" && p.decorationType === "Balloon",
-  );
-  const kidsSpecial = products.filter((p) => p.category === "Kids Themes");
-  const romanticAnniversary = products.filter(
     (p) =>
-      p.category === "Anniversary" ||
-      (p.secondaryCategories &&
-        p.secondaryCategories.includes("Anniversary" as any)),
+      p.occasions?.some((o: any) => o.name === "Birthday") &&
+      p.decorationType === "Balloon",
   );
-  const romanticDecor = products.filter((p) => p.category === "Romantic");
-  const newbornWelcome = products.filter(
-    (p) =>
-      p.category === "Baby Shower" ||
-      (p.secondaryCategories &&
-        p.secondaryCategories.includes("Welcome Baby" as any)),
+  const kidsSpecial = products.filter((p) =>
+    p.occasions?.some((o: any) => o.name === "Kids Themes"),
+  );
+  const romanticAnniversary = products.filter((p) =>
+    p.occasions?.some((o: any) => o.name === "Anniversary"),
+  );
+  const romanticDecor = products.filter((p) =>
+    p.occasions?.some((o: any) => o.name === "Romantic"),
+  );
+  const newbornWelcome = products.filter((p) =>
+    p.occasions?.some(
+      (o: any) => o.name === "Baby Shower" || o.name === "Welcome Baby",
+    ),
   );
   const recommended = [...products]
     .sort((a, b) => b.rating - a.rating)

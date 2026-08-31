@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { products } from "@/lib/data/products";
+import { getShopProducts } from "@/lib/actions/product";
 import ShopExperience from "@/components/shop/ShopExperience";
 import RelatedDiscovery from "@/components/shop/RelatedDiscovery";
 import {
@@ -16,7 +16,8 @@ export default async function DecorationsPage(props: {
   const slug = params.slug || [];
 
   const ctx = parseSlug(slug);
-  const matchedProducts = applyContext(products, ctx);
+  const products = await getShopProducts();
+  const matchedProducts = applyContext(products as any[], ctx);
 
   if (slug.length > 0 && matchedProducts.length === 0) {
     notFound();

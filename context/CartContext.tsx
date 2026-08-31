@@ -1,8 +1,14 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  ReactNode,
+} from "react";
 import { CartItem } from "@/lib/types";
-import { products } from "@/lib/data/products";
 import { toast } from "sonner";
 
 interface AddItemArgs {
@@ -18,6 +24,7 @@ interface AddItemArgs {
 
 interface CartContextValue {
   items: CartItem[];
+  cartProducts: any[];
   addItem: (args: AddItemArgs) => void;
   removeItem: (cartId: string) => void;
   updateQuantity: (cartId: string, quantity: number) => void;
@@ -44,6 +51,7 @@ const VALID_COUPONS: Record<string, number> = {
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [cartProducts, setCartProducts] = useState<any[]>([]);
   const [isDrawerOpen, setDrawerOpen] = useState(false);
   const [couponCode, setCouponCode] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
@@ -53,7 +61,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setItems(parsed.items ?? []);
         setCouponCode(parsed.couponCode ?? null);
       }
@@ -66,6 +73,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!hydrated) return;
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ items, couponCode }));
+
+    // Fetch product details for the cart items
+    const fetchCartProducts = async () => {
+      const ids = Array.from(new Set(items.map((i) => i.productId)));
+      if (ids.length > 0) {
+        const { getProductsByIds } = await import("@/lib/actions/product");
+        const fetched = await getProductsByIds(ids);
+        setCartProducts(fetched);
+      } else {
+        setCartProducts([]);
+      }
+    };
+    fetchCartProducts();
   }, [items, couponCode, hydrated]);
 
   const addItem = (args: AddItemArgs) => {
@@ -84,8 +104,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         venue: args.venue,
       },
     ]);
-    const product = products.find((p) => p.id === args.productId);
-    toast.success(`${product?.name ?? "Item"} added to cart`);
+    toast.success("Item added to cart");
     setDrawerOpen(true);
   };
 
@@ -95,7 +114,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const updateQuantity = (cartId: string, quantity: number) => {
     setItems((prev) =>
-      prev.map((i) => (i.cartId === cartId ? { ...i, quantity: Math.max(1, quantity) } : i))
+      prev.map((i) =>
+        i.cartId === cartId ? { ...i, quantity: Math.max(1, quantity) } : i,
+      ),
     );
   };
 
@@ -106,15 +127,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const subtotal = useMemo(() => {
     return items.reduce((sum, item) => {
-      const product = products.find((p) => p.id === item.productId);
-      if (!product) return sum;
+      const product = cartProducts.find((p) => p.id === item.productId);
+      if (!product) return sum; // wait until fetched
       const addOnsTotal = item.addOnIds.reduce((s, id) => {
-        const addOn = product.addOns.find((a) => a.id === id);
-        return s + (addOn?.price ?? 0);
+        const productAddOn = product.addOns?.find(
+          (pa: any) => pa.addOnId === id,
+        );
+        return s + (productAddOn?.addOn?.price ?? 0);
       }, 0);
       return sum + (product.price + addOnsTotal) * item.quantity;
     }, 0);
-  }, [items]);
+  }, [items, cartProducts]);
 
   const discount = useMemo(() => {
     if (!couponCode) return 0;
@@ -143,6 +166,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     <CartContext.Provider
       value={{
         items,
+        cartProducts,
         addItem,
         removeItem,
         updateQuantity,

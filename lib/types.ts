@@ -23,7 +23,14 @@ export type DecorationType =
   | "Stage & Ceremony"
   | "Combo";
 
-export type Venue = "Home" | "Hotel" | "Hall" | "Terrace" | "Outdoor" | "Office" | "Other";
+export type Venue =
+  | "Home"
+  | "Hotel"
+  | "Hall"
+  | "Terrace"
+  | "Outdoor"
+  | "Office"
+  | "Other";
 
 export type AvailabilityStatus = "available" | "limited" | "unavailable";
 
@@ -50,11 +57,16 @@ export interface CustomizationOption {
 
 export interface Review {
   id: string;
-  author: string;
+  userId: string;
+  user?: {
+    id: string;
+    name: string;
+  };
   rating: number;
-  date: string;
   comment: string;
   city: string;
+  createdAt: Date | string;
+  date?: string; // legacy support
 }
 
 export interface Product {
