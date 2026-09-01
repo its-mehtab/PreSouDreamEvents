@@ -1,12 +1,11 @@
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
-import { getProductBySlug, getAllProducts } from "@/lib/actions/product";
+import { getProductBySlug } from "@/lib/actions/product";
 import ProductDetailClient from "@/components/product/ProductDetailClient";
 
-export async function generateStaticParams() {
-  const products = await getAllProducts();
-  return products.map((p) => ({ slug: p.slug }));
-}
+// Product data is stored in PostgreSQL. Rendering on demand keeps `next build`
+// independent of database connectivity, which is required for Vercel builds.
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
