@@ -25,7 +25,20 @@ export function Select({
   className,
 }: SelectProps) {
   const [open, setOpen] = useState(false);
+  const [dropUp, setDropUp] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+
+  function toggleOpen() {
+    setOpen((prev) => {
+      if (!prev && ref.current) {
+        const rect = ref.current.getBoundingClientRect();
+        const spaceBelow = window.innerHeight - rect.bottom;
+        // if less than ~250px below, flip it upwards
+        setDropUp(spaceBelow < 250);
+      }
+      return !prev;
+    });
+  }
 
   const normalized = options.map((o) =>
     typeof o === "string" ? { value: o, label: o } : o
@@ -48,7 +61,7 @@ export function Select({
     if (e.key === "Escape") setOpen(false);
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
-      setOpen((o) => !o);
+      toggleOpen();
     }
   }
 
@@ -59,7 +72,7 @@ export function Select({
         type="button"
         role="combobox"
         aria-expanded={open}
-        onClick={() => setOpen((o) => !o)}
+        onClick={toggleOpen}
         onKeyDown={onKeyDown}
         className="input-field flex cursor-pointer items-center justify-between text-left"
       >
@@ -79,9 +92,14 @@ export function Select({
       {open && (
         <div
           role="listbox"
-          className="absolute left-0 right-0 z-50 mt-1.5 max-h-60 overflow-auto rounded-xl border border-ink/10 bg-white py-1.5 shadow-xl"
+          className={twMerge(
+            "absolute left-0 right-0 z-50 max-h-60 overflow-auto rounded-xl border border-ink/10 bg-white py-1.5 shadow-xl",
+            dropUp ? "bottom-full mb-1.5" : "top-full mt-1.5"
+          )}
           style={{
-            animation: "selectIn 0.15s cubic-bezier(0.4,0,0.2,1) both",
+            animation: dropUp
+              ? "selectInUp 0.15s cubic-bezier(0.4,0,0.2,1) both"
+              : "selectInDown 0.15s cubic-bezier(0.4,0,0.2,1) both",
           }}
         >
           {normalized.map((opt) => {
@@ -121,8 +139,12 @@ export function Select({
       )}
 
       <style>{`
-        @keyframes selectIn {
+        @keyframes selectInDown {
           from { opacity: 0; transform: translateY(-4px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes selectInUp {
+          from { opacity: 0; transform: translateY(4px); }
           to   { opacity: 1; transform: translateY(0); }
         }
       `}</style>

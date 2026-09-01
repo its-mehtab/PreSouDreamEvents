@@ -10,6 +10,7 @@ generator client {
 enum Role {
   CUSTOMER
   ADMIN
+  SUPER_ADMIN
 }
 
 enum BookingStatus {
@@ -232,3 +233,17 @@ model Discount {
   bookings    Booking[]
 }
 
+// ------------------------------------------------------
+// Admin Audit Log
+// ------------------------------------------------------
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  adminId    String
+  adminPhone String
+  action     String   // e.g. 'CREATE_PRODUCT', 'UPDATE_BOOKING_STATUS'
+  entity     String   // e.g. 'Product', 'Booking'
+  entityId   String?
+  details    Json?    // snapshot of what changed
+  createdAt  DateTime @default(now())
+}

@@ -43,6 +43,7 @@ import WhatsAppCTA from "@/components/WhatsAppCTA";
 import WhatsAppIcon from "@/components/WhatsAppIcon";
 import { toast } from "sonner";
 import { DatePicker } from "@/components/ui/DatePicker";
+import { Select } from "@/components/ui/Select";
 import {
   CustomColorPicker,
   BalloonIcon,
@@ -1704,16 +1705,12 @@ function ReviewModal({
             <label className="mb-1.5 block text-sm font-semibold text-ink">
               Your City <span className="text-punch-500">*</span>
             </label>
-            <select
+            <Select
+              options={INDIAN_CITIES}
               value={city}
-              onChange={(e) => setCity(e.target.value)}
-              className="w-full rounded-xl border border-ink/15 bg-paper px-4 py-3 text-sm text-ink focus:border-grape-400 focus:outline-none focus:ring-2 focus:ring-grape-200 transition-colors"
-            >
-              <option value="">Select your city…</option>
-              {INDIAN_CITIES.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
+              onChange={setCity}
+              placeholder="Select your city…"
+            />
           </div>
 
           {/* Error banner */}

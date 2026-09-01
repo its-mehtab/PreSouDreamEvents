@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import "./globals.css";
+import "../globals.css";
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { LocationProvider } from "@/context/LocationContext";
@@ -10,13 +10,13 @@ import Footer from "@/components/Footer";
 import CartDrawer from "@/components/header/CartDrawer";
 
 const outfit = localFont({
-  src: "../public/fonts/outfit-latin.woff2",
+  src: "../../public/fonts/outfit-latin.woff2",
   variable: "--font-outfit",
   display: "swap",
 });
 
 const playfairDisplay = localFont({
-  src: "../public/fonts/playfair-latin.woff2",
+  src: "../../public/fonts/playfair-latin.woff2",
   variable: "--font-playfair",
   display: "swap",
 });

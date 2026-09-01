@@ -41,7 +41,7 @@ export default function CategoryNav({ navConfig }: CategoryNavProps) {
 
           <Link
             href="/plan-my-celebration"
-            className="group flex shrink-0 items-center gap-2 rounded-full bg-grape-50 px-4 py-1.5 text-sm font-bold text-grape-700 transition-all hover:bg-grape-100/80 hover:text-grape-800 hover:shadow-md"
+            className="group flex shrink-0 items-center gap-2 rounded-full bg-grape-50 px-4 py-1.5 text-sm font-bold text-grape-700 transition-all hover:bg-grape-100/80 hover:text-grape-800"
           >
             <span>Plan My Celebration</span>
             <span className="transition-transform group-hover:rotate-12">

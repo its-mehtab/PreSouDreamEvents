@@ -20,7 +20,7 @@ function slugify(s: string) {
 async function main() {
   console.log("Seeding database from local variables...");
 
-  // 1. Create Admin User
+  // 1. Create Admin & Super Admin Users
   const adminUser = await prisma.user.upsert({
     where: { phone: "9999999999" },
     update: { role: Role.ADMIN },
@@ -31,6 +31,28 @@ async function main() {
     },
   });
   console.log(`Created Admin User: ${adminUser.phone}`);
+
+  const superAdminUser = await prisma.user.upsert({
+    where: { phone: "8888888888" },
+    update: { role: Role.SUPER_ADMIN },
+    create: {
+      phone: "8888888888",
+      name: "Super Admin",
+      role: Role.SUPER_ADMIN,
+    },
+  });
+  console.log(`Created Super Admin User: ${superAdminUser.phone}`);
+  
+  const customerUser = await prisma.user.upsert({
+    where: { phone: "7777777777" },
+    update: { role: Role.CUSTOMER },
+    create: {
+      phone: "7777777777",
+      name: "Test Customer",
+      role: Role.CUSTOMER,
+    },
+  });
+  console.log(`Created Customer User: ${customerUser.phone}`);
 
   // 2. Taxonomy (Cities, Occasions, Themes, DecorationTypes, Styles)
   console.log("Seeding cities...");
@@ -202,6 +224,73 @@ async function main() {
       }
     }
   }
+
+  // 4. Discounts
+  console.log("Seeding discounts...");
+  const discount = await prisma.discount.upsert({
+    where: { code: "WELCOME10" },
+    update: {},
+    create: {
+      code: "WELCOME10",
+      description: "10% off your first booking",
+      discountPct: 10,
+      isActive: true,
+    },
+  });
+
+  // 5. Bookings
+  console.log("Seeding bookings and reviews...");
+  const product = await prisma.product.findFirst();
+  const city = await prisma.city.findFirst();
+
+  if (product && city) {
+    const booking = await prisma.booking.create({
+      data: {
+        userId: customerUser.id,
+        cityId: city.id,
+        venue: "Home",
+        eventDate: new Date(),
+        eventTime: "18:00 - 20:00",
+        totalPrice: product.price,
+        status: "CONFIRMED",
+        couponId: discount.id,
+        items: {
+          create: [
+            {
+              productId: product.id,
+              quantity: 1,
+              priceAtBooking: product.price,
+            }
+          ]
+        }
+      }
+    });
+    console.log(`Created Booking: ${booking.id}`);
+
+    const review = await prisma.review.create({
+      data: {
+        productId: product.id,
+        userId: customerUser.id,
+        rating: 5,
+        comment: "Amazing decoration! Loved it.",
+        city: city.name,
+      }
+    });
+    console.log(`Created Review: ${review.id}`);
+  }
+
+  // 6. Audit Logs
+  console.log("Seeding audit logs...");
+  await prisma.auditLog.create({
+    data: {
+      adminId: superAdminUser.id,
+      adminPhone: superAdminUser.phone,
+      action: "CREATED_DISCOUNT",
+      entity: "Discount",
+      entityId: discount.id,
+      details: { code: discount.code },
+    }
+  });
 
   console.log("Seeding completed successfully!");
 }

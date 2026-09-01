@@ -25,6 +25,7 @@ interface DatePickerProps {
   className?: string;
   trigger?: React.ReactNode;
   inline?: boolean;
+  includeTime?: boolean;
 }
 
 export function DatePicker({
@@ -34,6 +35,7 @@ export function DatePicker({
   className,
   trigger,
   inline,
+  includeTime,
 }: DatePickerProps) {
   const [open, setOpen] = useState(false);
   const [viewMonth, setViewMonth] = useState<Date>(
@@ -41,7 +43,11 @@ export function DatePicker({
   );
   const ref = useRef<HTMLDivElement>(null);
   const today = startOfDay(new Date());
-  const selected = value ? startOfDay(new Date(value)) : null;
+  const selected = value ? new Date(value) : null;
+  const [time, setTime] = useState({
+    hours: selected ? format(selected, "HH") : "12",
+    minutes: selected ? format(selected, "mm") : "00",
+  });
 
   // Close on outside click
   useEffect(() => {
@@ -68,8 +74,23 @@ export function DatePicker({
 
   function handleSelect(day: Date) {
     if (isBefore(day, today)) return;
-    onChange(format(day, "yyyy-MM-dd"));
-    if (!inline) setOpen(false);
+    
+    if (includeTime) {
+      const dateStr = format(day, "yyyy-MM-dd");
+      onChange(`${dateStr}T${time.hours}:${time.minutes}`);
+    } else {
+      onChange(format(day, "yyyy-MM-dd"));
+      if (!inline) setOpen(false);
+    }
+  }
+
+  function handleTimeChange(type: "hours" | "minutes", val: string) {
+    const newTime = { ...time, [type]: val };
+    setTime(newTime);
+    if (selected) {
+      const dateStr = format(selected, "yyyy-MM-dd");
+      onChange(`${dateStr}T${newTime.hours}:${newTime.minutes}`);
+    }
   }
 
   const days = buildCalendarDays();
@@ -149,6 +170,41 @@ export function DatePicker({
           );
         })}
       </div>
+
+      {/* Time selector */}
+      {includeTime && (
+        <div className="mt-4 flex items-center justify-between border-t border-ink/10 pt-4">
+          <p className="text-xs font-semibold text-ink/60">Time</p>
+          <div className="flex items-center gap-1.5">
+            <select
+              value={time.hours}
+              onChange={(e) => handleTimeChange("hours", e.target.value)}
+              className="rounded-lg border border-ink/10 bg-paper px-2 py-1 text-sm font-medium text-ink outline-none focus:border-grape-400"
+            >
+              {Array.from({ length: 24 }).map((_, i) => {
+                const h = i.toString().padStart(2, "0");
+                return (
+                  <option key={h} value={h}>
+                    {h}
+                  </option>
+                );
+              })}
+            </select>
+            <span className="text-ink/40">:</span>
+            <select
+              value={time.minutes}
+              onChange={(e) => handleTimeChange("minutes", e.target.value)}
+              className="rounded-lg border border-ink/10 bg-paper px-2 py-1 text-sm font-medium text-ink outline-none focus:border-grape-400"
+            >
+              {["00", "15", "30", "45"].map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
     </div>
   );
 
@@ -170,7 +226,7 @@ export function DatePicker({
           className="input-field flex cursor-pointer items-center justify-between text-left"
         >
           <span className={selected ? "text-ink" : "text-ink/40"}>
-            {selected ? format(selected, "dd MMM yyyy") : placeholder}
+            {selected ? format(selected, includeTime ? "dd MMM yyyy HH:mm" : "dd MMM yyyy") : placeholder}
           </span>
           <CalendarIcon size={16} className="ml-2 shrink-0 text-ink/40" />
         </button>
