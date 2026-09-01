@@ -427,6 +427,7 @@ export async function adminGetAllCustomers(search?: string) {
     },
     include: {
       _count: { select: { bookings: true, reviews: true } },
+      bookings: { select: { totalPrice: true, status: true } },
     },
     orderBy: { createdAt: "desc" },
   });
@@ -444,6 +445,18 @@ export async function adminGetCustomerById(id: string) {
       reviews: { include: { product: { select: { name: true } } } },
     },
   });
+}
+
+export async function adminToggleCustomerStatus(id: string, disabled: boolean) {
+  const session = await requireAdmin();
+  const user = await prisma.user.update({
+    where: { id },
+    data: { disabled },
+  });
+  await auditLog(session.userId, session.phone, "UPDATE_USER_STATUS", "User", id, { disabled });
+  revalidatePath("/admin/customers");
+  revalidatePath(`/admin/customers/${id}`);
+  return { success: true, user };
 }
 
 // ─────────────────────────────────────────────
